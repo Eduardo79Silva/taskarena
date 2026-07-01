@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
-	"log"
+	"fmt"
 	"os"
 )
 
@@ -18,10 +17,10 @@ const (
 )
 
 type Task struct {
-	Name         string
-	Description  string
-	TimeEstimate int
-	Priority     PriorityLevel
+	Name         string        `json:"name"`
+	Description  string        `json:"description"`
+	TimeEstimate int           `json:"timeEstimate"`
+	Priority     PriorityLevel `json:"priority"`
 }
 
 var TasksFilePath = "./tasks.json"
@@ -35,14 +34,17 @@ func check(e error) {
 }
 
 func appendTaskToJsonString(task Task, jsonText string) string {
+	fmt.Println(jsonText)
+
 	err := json.Unmarshal([]byte(jsonText), &Tasks)
 
 	check(err)
 
 	Tasks = append(Tasks, task)
 
-	result, err := json.Marshal(Tasks)
+	result, err := json.MarshalIndent(Tasks, "", "\t")
 
+	fmt.Println(string(result))
 	check(err)
 
 	return string(result)
@@ -54,29 +56,17 @@ func readFile(filePath string) string {
 	return string(dat)
 }
 
-func writeTask(task Task, fileHandle *os.File) {
+func writeTask(task Task) {
 	jsonText := readFile(TasksFilePath)
 
 	if jsonText == "" {
-		jsonText = "{}"
+		jsonText = "[]"
 	}
 
 	parsedJson := appendTaskToJsonString(task, jsonText)
 
-	writer := bufio.NewWriter(fileHandle)
-
-	_, err := writer.WriteString(parsedJson)
-
+	err := os.WriteFile(TasksFilePath, []byte(parsedJson), 0644)
 	check(err)
-}
-
-func checkFileExists(filePath string) *os.File {
-	fileHandle, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return fileHandle
 }
 
 func createTask(name string, description string, timeEstimate int, priority PriorityLevel) (Task, error) {
@@ -89,10 +79,9 @@ func createTask(name string, description string, timeEstimate int, priority Prio
 
 func main() {
 
-	testTask := Task{"Test", "Test task", 25, 1}
+	testTask, err := createTask("Test", "Test task", 25, 1)
 
-	fileHandle := checkFileExists(TasksFilePath)
+	check(err)
 
-	writeTask(testTask, fileHandle)
-
+	writeTask(testTask)
 }

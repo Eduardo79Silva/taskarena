@@ -39,12 +39,15 @@ func writeTask(task Task) {
 	check(err)
 }
 
-func pullTask() Task {
+func loadTasks() []Task {
 	jsonText := readFile(TasksFilePath)
+
 	if jsonText == "" {
-		return Task{}
+		return []Task{}
 	}
+
 	err := json.Unmarshal([]byte(jsonText), &Tasks)
 	check(err)
-	return Tasks[0]
+
+	return Tasks
 }

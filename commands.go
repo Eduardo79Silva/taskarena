@@ -38,6 +38,8 @@ func runPull(args []string) {
 	cmd.Parse(args)
 
 	fmt.Println("subcommand 'pull'")
-	task := pullTask()
+	tasks := loadTasks()
+	task, err := selectNextTask(tasks)
+	check(err)
 	fmt.Println(task)
 }

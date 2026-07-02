@@ -21,13 +21,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	counts := map[string]int{}
-	for range 10000 {
-		t, _ := selectNextTask(Tasks)
-		counts[t.Name+t.Description]++ // disambiguate the two "Yay" tasks
-	}
-	fmt.Println(counts)
-
 	for _, c := range commands {
 		if c.name == os.Args[1] {
 			c.run(os.Args[2:])

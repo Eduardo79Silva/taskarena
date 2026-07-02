@@ -3,10 +3,20 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
-var TasksFilePath = "./tasks.json"
+var TasksFilePath = defaultTasksFilePath()
 var Tasks []Task
+
+func defaultTasksFilePath() string {
+	home, err := os.UserHomeDir()
+	check(err)
+	dir := filepath.Join(home, ".config", "taskarena")
+	err = os.MkdirAll(dir, 0755)
+	check(err)
+	return filepath.Join(dir, "tasks.json")
+}
 
 func check(e error) {
 	if e != nil {
@@ -25,6 +35,9 @@ func appendTaskToJsonString(task Task, jsonText string) string {
 
 func readFile(filePath string) string {
 	dat, err := os.ReadFile(filePath)
+	if os.IsNotExist(err) {
+		return ""
+	}
 	check(err)
 	return string(dat)
 }

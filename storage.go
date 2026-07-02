@@ -6,16 +6,16 @@ import (
 	"path/filepath"
 )
 
-var TasksFilePath = defaultTasksFilePath()
+var TasksFilePath, CurrentTaskFilePath = defaultFilesPath()
 var Tasks []Task
 
-func defaultTasksFilePath() string {
+func defaultFilesPath() (string, string) {
 	home, err := os.UserHomeDir()
 	check(err)
 	dir := filepath.Join(home, ".config", "taskarena")
 	err = os.MkdirAll(dir, 0755)
 	check(err)
-	return filepath.Join(dir, "tasks.json")
+	return filepath.Join(dir, "tasks.json"), filepath.Join(dir, "current.json")
 }
 
 func check(e error) {
@@ -61,7 +61,16 @@ func writeAllTasks(tasks []Task) {
 	check(err)
 }
 
-func deleteTask(tasks []*Task, taskID string) []*Task {
+func writeCurrentTask(task Task) {
+	result, err := json.MarshalIndent(task, "", "\t")
+	check(err)
+
+	parsedJson := string(result)
+	err = os.WriteFile(CurrentTaskFilePath, []byte(parsedJson), 0644)
+	check(err)
+}
+
+func deleteTask(tasks []Task, taskID string) []Task {
 	for i, task := range tasks {
 		if task.ID == taskID {
 			return append(tasks[:i], tasks[i+1:]...)

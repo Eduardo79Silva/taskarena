@@ -52,6 +52,24 @@ func writeTask(task Task) {
 	check(err)
 }
 
+func writeAllTasks(tasks []Task) {
+	result, err := json.MarshalIndent(tasks, "", "\t")
+	check(err)
+
+	parsedJson := string(result)
+	err = os.WriteFile(TasksFilePath, []byte(parsedJson), 0644)
+	check(err)
+}
+
+func deleteTask(tasks []*Task, taskID string) []*Task {
+	for i, task := range tasks {
+		if task.ID == taskID {
+			return append(tasks[:i], tasks[i+1:]...)
+		}
+	}
+	return tasks
+}
+
 func loadTasks() []Task {
 	jsonText := readFile(TasksFilePath)
 

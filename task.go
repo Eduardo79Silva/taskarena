@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"strings"
+	"time"
 )
 
 type PriorityLevel int
@@ -36,15 +38,18 @@ func (p *PriorityLevel) Set(s string) error {
 }
 
 type Task struct {
+	ID           string        `json:"id"`
 	Name         string        `json:"name"`
 	Description  string        `json:"description"`
 	TimeEstimate int           `json:"timeEstimate"`
 	Priority     PriorityLevel `json:"priority"`
+	CreatedAt    time.Time     `json:"created_at"`
+	CompletedAt  *time.Time    `json:"completed_at,omitempty"`
 }
 
 func createTask(name string, description string, timeEstimate int, priority PriorityLevel) (Task, error) {
 	if name == "" {
 		return Task{}, errors.New("empty name")
 	}
-	return Task{name, description, timeEstimate, priority}, nil
+	return Task{uuid.New().String(), name, description, timeEstimate, priority, time.Now(), nil}, nil
 }

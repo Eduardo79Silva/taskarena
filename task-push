@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -euo pipefail
+
+name=$(walker --dmenu -p "Task name:") || true
+if [ -z "$name" ]; then
+	exit 0
+fi
+
+desc=$(walker --dmenu -p "Description (optional):") || true
+
+priority=$(printf "low\nmedium\nhigh\nveryhigh\n" | walker --dmenu -p "Priority:") || true
+if [ -z "$priority" ]; then
+	priority="medium"
+fi
+
+time_estimate=$(walker --dmenu -p "Time estimate (minutes):") || true
+if [ -z "$time_estimate" ]; then
+	time_estimate=25
+fi
+
+taskarena push -n "$name" -d "$desc" -p "$priority" -t "$time_estimate"
+
+notify-send -a "Tasks" "Task created" "$name (${priority}, ${time_estimate}m)"

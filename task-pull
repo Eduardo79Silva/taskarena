@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -euo pipefail
+
+output=$(task-cli pull)
+task_line=$(echo "$output" | tail -n 1)
+
+notify-send -a "Tasks" "Next task" "$task_line"

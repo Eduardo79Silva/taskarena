@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+BIN_DIR="${HOME}/.local/bin"
+CONFIG_FILE="${HOME}/.config/taskarena/tasks.json"
+
+mkdir -p "$BIN_DIR"
+
+for file in taskarena task-pull task-push; do
+    if [[ ! -f "$file" ]]; then
+        echo "Error: '$file' not found." >&2
+        exit 1
+    fi
+
+    cp --update "$file" "$BIN_DIR/$file"
+done
+
+if [[ "${1:-}" == "--clean" || "${1:-}" == "clean" ]]; then
+    rm -f "$CONFIG_FILE"
+    echo "Removed $CONFIG_FILE"
+fi

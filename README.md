@@ -69,12 +69,12 @@ Add a task to the arena.
 taskarena push -n <name> [-d <description>] [-p <priority>] [-t <time_estimate>]
 ```
 
-| Flag | Shorthand | Default | Description |
-||--||-|
-| `--name` | `-n` | required | Task name |
-| `--desc` | `-d` | `""` | Optional description |
-| `--priority` | `-p` | `medium` | `low`, `medium`, `high`, `veryhigh` |
-| `--time` | `-t` | `25` | Time estimate in minutes |
+| Flag         | Shorthand | Default  | Description                         |
+| ------------ | --------- | -------- | ----------------------------------- |
+| `--name`     | `-n`      | required | Task name                           |
+| `--desc`     | `-d`      | `""`     | Optional description                |
+| `--priority` | `-p`      | `medium` | `low`, `medium`, `high`, `veryhigh` |
+| `--time`     | `-t`      | `25`     | Time estimate in minutes            |
 
 #### `pull`
 

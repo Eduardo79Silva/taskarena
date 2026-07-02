@@ -88,6 +88,22 @@ func writeTask(task Task) {
 	check(err)
 }
 
+func pullTask() Task {
+
+	jsonText := readFile(TasksFilePath)
+
+	if jsonText == "" {
+		return Task{}
+	}
+
+	err := json.Unmarshal([]byte(jsonText), &Tasks)
+
+	check(err)
+
+	return Tasks[0]
+
+}
+
 func createTask(name string, description string, timeEstimate int, priority PriorityLevel) (Task, error) {
 	if name == "" {
 		return Task{}, errors.New("empty name")
@@ -115,20 +131,28 @@ func main() {
 	pushTaskTimeEstimate := pushCmd.Int("time", 25, "time estimate for the task")
 	pushCmd.IntVar(pushTaskTimeEstimate, "t", 25, "time estimate (shorthand)")
 
+	pullCmd := flag.NewFlagSet("pull", flag.ExitOnError)
+
 	switch os.Args[1] {
 
 	case "push":
 		pushCmd.Parse(os.Args[2:])
 		fmt.Println("subcommand 'push'")
 		fmt.Println("  name:", pushTaskName)
+		testTask, err := createTask(pushTaskName, pushTaskDescription, *pushTaskTimeEstimate, PriorityLevel(pushTaskPriority))
+		check(err)
+
+		writeTask(testTask)
+	case "pull":
+		pullCmd.Parse(os.Args[2:])
+		fmt.Println("subcommand 'pull'")
+
+		task := pullTask()
+
+		fmt.Println(task)
 	default:
 		fmt.Println("expected 'push' or 'pull' subcommands")
 		os.Exit(1)
 	}
 
-	testTask, err := createTask(pushTaskName, pushTaskDescription, *pushTaskTimeEstimate, PriorityLevel(pushTaskPriority))
-
-	check(err)
-
-	writeTask(testTask)
 }

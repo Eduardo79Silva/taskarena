@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type PriorityLevel int
@@ -15,6 +17,26 @@ const (
 	HighPriority
 	VeryHighPriority
 )
+
+func (p *PriorityLevel) String() string {
+	return [...]string{"low", "medium", "high", "veryhigh"}[*p]
+}
+
+func (p *PriorityLevel) Set(s string) error {
+	switch strings.ToLower(s) {
+	case "low":
+		*p = LowPriority
+	case "medium":
+		*p = MediumPriority
+	case "high":
+		*p = HighPriority
+	case "veryhigh":
+		*p = VeryHighPriority
+	default:
+		return fmt.Errorf("invalid priority: %s", s)
+	}
+	return nil
+}
 
 type Task struct {
 	Name         string        `json:"name"`
@@ -34,8 +56,6 @@ func check(e error) {
 }
 
 func appendTaskToJsonString(task Task, jsonText string) string {
-	fmt.Println(jsonText)
-
 	err := json.Unmarshal([]byte(jsonText), &Tasks)
 
 	check(err)
@@ -44,7 +64,6 @@ func appendTaskToJsonString(task Task, jsonText string) string {
 
 	result, err := json.MarshalIndent(Tasks, "", "\t")
 
-	fmt.Println(string(result))
 	check(err)
 
 	return string(result)
@@ -79,7 +98,35 @@ func createTask(name string, description string, timeEstimate int, priority Prio
 
 func main() {
 
-	testTask, err := createTask("Test", "Test task", 25, 1)
+	pushCmd := flag.NewFlagSet("push", flag.ExitOnError)
+
+	var pushTaskPriority PriorityLevel = MediumPriority
+	pushCmd.Var(&pushTaskPriority, "priority", "priority (low|medium|high|veryhigh)")
+	pushCmd.Var(&pushTaskPriority, "p", "priority (shorthand)")
+
+	var pushTaskName string
+	pushCmd.StringVar(&pushTaskName, "name", "", "name")
+	pushCmd.StringVar(&pushTaskName, "n", "", "name (shorthand)")
+
+	var pushTaskDescription string
+	pushCmd.StringVar(&pushTaskDescription, "desc", "", "description")
+	pushCmd.StringVar(&pushTaskDescription, "d", "", "description (shorthand)")
+
+	pushTaskTimeEstimate := pushCmd.Int("time", 25, "time estimate for the task")
+	pushCmd.IntVar(pushTaskTimeEstimate, "t", 25, "time estimate (shorthand)")
+
+	switch os.Args[1] {
+
+	case "push":
+		pushCmd.Parse(os.Args[2:])
+		fmt.Println("subcommand 'push'")
+		fmt.Println("  name:", pushTaskName)
+	default:
+		fmt.Println("expected 'push' or 'pull' subcommands")
+		os.Exit(1)
+	}
+
+	testTask, err := createTask(pushTaskName, pushTaskDescription, *pushTaskTimeEstimate, PriorityLevel(pushTaskPriority))
 
 	check(err)
 

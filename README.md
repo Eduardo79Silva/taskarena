@@ -18,7 +18,11 @@ taskarena push -n "Write unit tests" -p high -t 30
 taskarena pull
 ```
 
-**Done** the current task. Clear it from the current.json. (In Progress)
+**Done** the current task. Clear it from the current.json and put it in completed.json.
+
+```
+taskarena done
+```
 
 ## Installation
 
@@ -111,7 +115,7 @@ Tasks are stored as a JSON array at:
 
 ## Contributing
 
-Contributions are welcome. The project is intentionally small — the goal is to keep it that way.
+Contributions are welcome. The project is intentionally small, the goal is to keep it that way.
 
 If you want to contribute, a few areas that could use thought:
 
@@ -120,6 +124,8 @@ If you want to contribute, a few areas that could use thought:
 - A `--fits <minutes>` flag on `pull` to filter the pool to tasks that fit a given time slot
 - A `list` command to inspect the current arena
 - Configurable scoring weights via `~/.config/taskarena/config.toml` among other configs
+- An `info` command to get statistics about current, completed and backlog tasks
+- Task tags to enable filtering
 
 Please open an issue before starting work on anything substantial so we can align on direction. Keep PRs focused and the binary dependency-light.
 

@@ -13,6 +13,7 @@ type command struct {
 var commands = []command{
 	{"push", runPush},
 	{"pull", runPull},
+	{"done", runDone},
 }
 
 func main() {

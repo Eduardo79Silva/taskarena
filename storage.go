@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"time"
 )
 
-var TasksFilePath, CurrentTaskFilePath = defaultFilesPath()
-var Tasks []Task
+var TasksFilePath, CurrentTaskFilePath, CompletedTasksFilePath = defaultFilesPath()
 
-func defaultFilesPath() (string, string) {
+func defaultFilesPath() (string, string, string) {
 	home, err := os.UserHomeDir()
 	check(err)
 	dir := filepath.Join(home, ".config", "taskarena")
 	err = os.MkdirAll(dir, 0755)
 	check(err)
-	return filepath.Join(dir, "tasks.json"), filepath.Join(dir, "current.json")
+	return filepath.Join(dir, "tasks.json"), filepath.Join(dir, "current.json"), filepath.Join(dir, "completed.json")
 }
 
 func check(e error) {
@@ -24,50 +24,62 @@ func check(e error) {
 	}
 }
 
-func appendTaskToJsonString(task Task, jsonText string) string {
-	err := json.Unmarshal([]byte(jsonText), &Tasks)
-	check(err)
-	Tasks = append(Tasks, task)
-	result, err := json.MarshalIndent(Tasks, "", "\t")
-	check(err)
-	return string(result)
-}
-
-func readFile(filePath string) string {
+func readTasksFile(filePath string) ([]Task, error) {
 	dat, err := os.ReadFile(filePath)
 	if os.IsNotExist(err) {
-		return ""
+		return []Task{}, nil
 	}
-	check(err)
-	return string(dat)
+	if err != nil {
+		return nil, err
+	}
+	if len(dat) == 0 {
+		return []Task{}, nil
+	}
+
+	var tasks []Task
+	err = json.Unmarshal(dat, &tasks)
+	return tasks, err
 }
 
-func writeTask(task Task) {
-	jsonText := readFile(TasksFilePath)
-	if jsonText == "" {
-		jsonText = "[]"
+func readTaskFile(filePath string) (Task, error) {
+	dat, err := os.ReadFile(filePath)
+	if err != nil {
+		return Task{}, err
 	}
-	parsedJson := appendTaskToJsonString(task, jsonText)
-	err := os.WriteFile(TasksFilePath, []byte(parsedJson), 0644)
+	var task Task
+	err = json.Unmarshal(dat, &task)
+	return task, err
+}
+
+func writeTasksFile(filePath string, tasks []Task) error {
+	data, err := json.MarshalIndent(tasks, "", "\t")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filePath, data, 0644)
+}
+
+func writeTaskFile(filePath string, task Task) error {
+	data, err := json.MarshalIndent(task, "", "\t")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filePath, data, 0644)
+}
+
+func pushTask(filePath string, task Task) {
+	tasks, err := readTasksFile(filePath)
 	check(err)
+	tasks = append(tasks, task)
+	check(writeTasksFile(filePath, tasks))
 }
 
 func writeAllTasks(tasks []Task) {
-	result, err := json.MarshalIndent(tasks, "", "\t")
-	check(err)
-
-	parsedJson := string(result)
-	err = os.WriteFile(TasksFilePath, []byte(parsedJson), 0644)
-	check(err)
+	check(writeTasksFile(TasksFilePath, tasks))
 }
 
 func writeCurrentTask(task Task) {
-	result, err := json.MarshalIndent(task, "", "\t")
-	check(err)
-
-	parsedJson := string(result)
-	err = os.WriteFile(CurrentTaskFilePath, []byte(parsedJson), 0644)
-	check(err)
+	check(writeTaskFile(CurrentTaskFilePath, task))
 }
 
 func deleteTask(tasks []Task, taskID string) []Task {
@@ -79,15 +91,35 @@ func deleteTask(tasks []Task, taskID string) []Task {
 	return tasks
 }
 
-func loadTasks() []Task {
-	jsonText := readFile(TasksFilePath)
+func deleteTaskFromFile(filePath string, taskID string) {
+	tasks, err := readTasksFile(filePath)
+	check(err)
+	tasks = deleteTask(tasks, taskID)
+	check(writeTasksFile(filePath, tasks))
+}
 
-	if jsonText == "" {
-		return []Task{}
+func clearCurrentTask() error {
+	err := os.Remove(CurrentTaskFilePath)
+	if os.IsNotExist(err) {
+		return nil
 	}
+	return err
+}
 
-	err := json.Unmarshal([]byte(jsonText), &Tasks)
+func completeCurrentTask() {
+	current, err := readTaskFile(CurrentTaskFilePath)
 	check(err)
 
-	return Tasks
+	now := time.Now()
+	current.CompletedAt = &now
+
+	pushTask(CompletedTasksFilePath, current)
+
+	check(clearCurrentTask())
+}
+
+func loadTasks() []Task {
+	tasks, err := readTasksFile(TasksFilePath)
+	check(err)
+	return tasks
 }

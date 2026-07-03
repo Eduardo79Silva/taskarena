@@ -30,7 +30,7 @@ func runPush(args []string) {
 
 	task, err := createTask(name, description, *timeEstimate, priority)
 	check(err)
-	writeTask(task)
+	pushTask(TasksFilePath, task)
 }
 
 func runPull(args []string) {
@@ -42,4 +42,12 @@ func runPull(args []string) {
 	task, err := selectNextTask(tasks)
 	check(err)
 	fmt.Println(task)
+}
+
+func runDone(args []string) {
+	cmd := flag.NewFlagSet("done", flag.ExitOnError)
+	cmd.Parse(args)
+
+	fmt.Println("subcommand 'done'")
+	completeCurrentTask()
 }

@@ -48,16 +48,8 @@ func selectNextTask(tasks []Task) (Task, error) {
 		total += scores[i]
 	}
 
-	var chosenTask Task
-
 	if total == 0 {
-		chosenTask = tasks[rand.Intn(len(tasks))]
-
-		writeCurrentTask(chosenTask)
-		tasks = deleteTask(tasks, chosenTask.ID)
-		writeAllTasks(tasks)
-
-		return chosenTask, nil
+		return tasks[rand.Intn(len(tasks))], nil
 	}
 
 	r := rand.Float64() * total
@@ -65,19 +57,9 @@ func selectNextTask(tasks []Task) (Task, error) {
 	for i, s := range scores {
 		cumulative += s
 		if r < cumulative {
-			chosenTask = tasks[i]
-
-			writeCurrentTask(chosenTask)
-			tasks = deleteTask(tasks, chosenTask.ID)
-			writeAllTasks(tasks)
-			return chosenTask, nil
+			return tasks[i], nil
 		}
 	}
 
-	chosenTask = tasks[len(tasks)-1]
-	writeCurrentTask(chosenTask)
-	tasks = deleteTask(tasks, chosenTask.ID)
-	writeAllTasks(tasks)
-
-	return chosenTask, nil
+	return tasks[len(tasks)-1], nil
 }

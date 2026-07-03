@@ -40,6 +40,20 @@ func runPull(args []string) {
 	fmt.Println("subcommand 'pull'")
 	tasks := loadTasks()
 	task, err := selectNextTask(tasks)
+
+	currentTask, err := readTaskFile(CurrentTaskFilePath)
+
+	if (currentTask != Task{}) {
+		pushTask(TasksFilePath, currentTask)
+		tasks = loadTasks()
+	} else if currentTask.ID == task.ID {
+		fmt.Println(task)
+	}
+
+	writeCurrentTask(task)
+	tasks = deleteTask(tasks, task.ID)
+	writeAllTasks(tasks)
+
 	check(err)
 	fmt.Println(task)
 }

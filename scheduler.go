@@ -4,16 +4,20 @@ import (
 	"errors"
 	"math"
 	"math/rand"
+	"time"
 )
 
 var errEmptyTaskList = errors.New("no tasks to pull from")
 
 const (
-	priorityWeight = 0.7
-	timeWeight     = 0.3
+	priorityWeight = 0.5
+	timeWeight     = 0.2
+	agingWeight    = 0.3
 )
 
 const selectionSharpness = 2.15
+
+const agingHorizon = 7 * 24.0
 
 func wsmScore(t Task, minTime, maxTime int) float64 {
 	normPriority := float64(t.Priority) / float64(VeryHighPriority)
@@ -23,7 +27,11 @@ func wsmScore(t Task, minTime, maxTime int) float64 {
 		normTime = 1.0 - float64(t.TimeEstimate-minTime)/float64(maxTime-minTime)
 	}
 
-	return priorityWeight*normPriority + timeWeight*normTime
+	age := time.Since(t.CreatedAt).Hours()
+
+	normAge := min(age/agingHorizon, 1.0)
+
+	return priorityWeight*normPriority + timeWeight*normTime + agingWeight*normAge
 }
 
 func selectNextTask(tasks []Task) (Task, error) {

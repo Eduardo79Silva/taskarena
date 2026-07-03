@@ -15,6 +15,7 @@ var commands = []command{
 	{"pull", runPull},
 	{"done", runDone},
 	{"status", runStatus},
+	{"list", runList},
 }
 
 func main() {

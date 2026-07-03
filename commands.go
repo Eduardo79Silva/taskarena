@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"text/tabwriter"
 )
 
 func runPush(args []string) {
@@ -89,4 +90,23 @@ func runStatus(args []string) {
 		fmt.Println("unknown format:", *format)
 		os.Exit(1)
 	}
+}
+
+func runList(args []string) {
+	cmd := flag.NewFlagSet("list", flag.ExitOnError)
+	cmd.Parse(args)
+
+	tasks := loadTasks()
+
+	if len(tasks) == 0 {
+		fmt.Println("No tasks.")
+		return
+	}
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
+	fmt.Fprintln(w, "PRIORITY\tTIME\tNAME")
+	for _, t := range tasks {
+		fmt.Fprintf(w, "%s\t%dm\t%s\n", t.Priority.String(), t.TimeEstimate, t.Name)
+	}
+	w.Flush()
 }

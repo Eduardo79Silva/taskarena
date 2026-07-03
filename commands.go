@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 )
 
 func runPush(args []string) {
@@ -64,4 +65,28 @@ func runDone(args []string) {
 
 	fmt.Println("subcommand 'done'")
 	completeCurrentTask()
+}
+
+func runStatus(args []string) {
+	cmd := flag.NewFlagSet("status", flag.ExitOnError)
+
+	format := cmd.String("format", "plain", "output format (plain|waybar|notify)")
+	cmd.Parse(args)
+
+	view, err := getCurrentTaskView()
+	check(err)
+
+	switch *format {
+	case "waybar":
+		out, err := formatWaybar(view)
+		check(err)
+		fmt.Println(out)
+	case "notify":
+		fmt.Println(formatNotification(view))
+	case "plain":
+		fmt.Println(formatPlain(view))
+	default:
+		fmt.Println("unknown format:", *format)
+		os.Exit(1)
+	}
 }

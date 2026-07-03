@@ -47,6 +47,13 @@ type Task struct {
 	CompletedAt  *time.Time    `json:"completed_at,omitempty"`
 }
 
+type CurrentTaskView struct {
+	Name         string
+	Description  string
+	Priority     PriorityLevel
+	TimeEstimate int
+}
+
 func createTask(name string, description string, timeEstimate int, priority PriorityLevel) (Task, error) {
 	if name == "" {
 		return Task{}, errors.New("empty name")

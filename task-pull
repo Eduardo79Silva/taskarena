@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-output=$(taskarena pull)
+taskarena pull
+output=$(taskarena status --format notify)
 task_line=$(echo "$output" | tail -n 1)
 
 notify-send -a "Tasks" "Next task" "$task_line"

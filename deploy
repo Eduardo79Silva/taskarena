@@ -9,7 +9,7 @@ COMPLETED_TASKS_FILE="${HOME}/.config/taskarena/completed.json"
 
 mkdir -p "$BIN_DIR"
 
-for file in taskarena task-pull task-push; do
+for file in taskarena task-pull task-push task-status; do
     if [[ ! -f "$file" ]]; then
         echo "Error: '$file' not found." >&2
         exit 1

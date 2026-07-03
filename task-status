@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -euo pipefail
+
+output=$(taskarena status --format notify)
+task_line=$(echo "$output")
+
+notify-send -a "Tasks" "Current task" "$task_line"
+

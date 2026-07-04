@@ -25,25 +25,40 @@ func runPush(args []string) {
 	timeEstimate := cmd.Int("time", 25, "time estimate for the task")
 	cmd.IntVar(timeEstimate, "t", 25, "time estimate (shorthand)")
 
+	var tag string
+	cmd.StringVar(&tag, "tag", "", "tag")
+
 	cmd.Parse(args)
 
 	fmt.Println("subcommand 'push'")
 	fmt.Println("  name:", name)
 
-	task, err := createTask(name, description, *timeEstimate, priority)
+	task, err := createTask(name, description, *timeEstimate, priority, tag)
 	check(err)
 	pushTask(TasksFilePath, task)
 }
 
 func runPull(args []string) {
 	cmd := flag.NewFlagSet("pull", flag.ExitOnError)
+
+	tagFilter := cmd.String("tag", "", "filter by tag")
+
 	cmd.Parse(args)
 
 	fmt.Println("subcommand 'pull'")
 	tasks := loadTasks()
+
+	if *tagFilter != "" {
+		tasks = filterTasksByTag(tasks, *tagFilter)
+	}
+
 	task, err := selectNextTask(tasks)
 
+	check(err)
+
 	currentTask, err := readTaskFile(CurrentTaskFilePath)
+
+	check(err)
 
 	if (currentTask != Task{}) {
 		pushTask(TasksFilePath, currentTask)

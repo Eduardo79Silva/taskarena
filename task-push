@@ -9,16 +9,18 @@ fi
 
 desc=$(walker --dmenu -p "Description (optional):") || true
 
+tag=$(walker --dmenu -p "Tag (optional):") || true
+
 priority=$(printf "low\nmedium\nhigh\nveryhigh\n" | walker --dmenu -p "Priority:") || true
 if [ -z "$priority" ]; then
 	priority="medium"
 fi
 
-time_estimate=$(walker --dmenu -p "Time estimate (minutes):") || true
+time_estimate=$(walker --dmenu -p "Time estimate in minutes (default = 25):") || true
 if [ -z "$time_estimate" ]; then
 	time_estimate=25
 fi
 
-taskarena push -n "$name" -d "$desc" -p "$priority" -t "$time_estimate"
+taskarena push -n "$name" -d "$desc" -p "$priority" -t "$time_estimate" --tag "$tag"
 
 notify-send -a "Tasks" "Task created" "$name (${priority}, ${time_estimate}m)"

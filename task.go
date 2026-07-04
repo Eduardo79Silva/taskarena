@@ -43,6 +43,7 @@ type Task struct {
 	Description  string        `json:"description"`
 	TimeEstimate int           `json:"timeEstimate"`
 	Priority     PriorityLevel `json:"priority"`
+	Tag          string        `json:"tag"`
 	CreatedAt    time.Time     `json:"created_at"`
 	CompletedAt  *time.Time    `json:"completed_at,omitempty"`
 }
@@ -54,9 +55,9 @@ type CurrentTaskView struct {
 	TimeEstimate int
 }
 
-func createTask(name string, description string, timeEstimate int, priority PriorityLevel) (Task, error) {
+func createTask(name string, description string, timeEstimate int, priority PriorityLevel, tag string) (Task, error) {
 	if name == "" {
 		return Task{}, errors.New("empty name")
 	}
-	return Task{uuid.New().String(), name, description, timeEstimate, priority, time.Now(), nil}, nil
+	return Task{uuid.New().String(), name, description, timeEstimate, priority, tag, time.Now(), nil}, nil
 }

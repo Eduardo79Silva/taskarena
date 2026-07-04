@@ -19,6 +19,19 @@ const selectionSharpness = 2.15
 
 const agingHorizon = 7 * 24.0
 
+func filterTasksByTag(tasks []Task, tag string) []Task {
+	var filteredTasks []Task
+
+	for _, task := range tasks {
+		if task.Tag == tag {
+			filteredTasks = append(filteredTasks, task)
+
+		}
+	}
+
+	return filteredTasks
+}
+
 func wsmScore(t Task, minTime, maxTime int) float64 {
 	normPriority := float64(t.Priority) / float64(VeryHighPriority)
 

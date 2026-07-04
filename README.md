@@ -122,13 +122,10 @@ If you want to contribute, a few areas that could use thought:
 - An `info` subcommand to get statistics about current, completed and backlog tasks
 - A `pause` subcommand that puts the current task in the backlog
 - A `snooze` subcommand that puts the current task in the backlog and makes sure it is not picked up for the rest of the day
-- A `status` subcommand outputting Waybar-compatible JSON for a current-task module
 - A way to edit existing tasks without manually manipulating tasks.json
 - Configurable scoring weights via `~/.config/taskarena/config.toml` among other configs
 - Save the time worked on a task
-- Task aging so that neglected low-priority tasks gradually increase their selection weight
 - Task chain, where if one task has prerequisites and it if chosen it goes up the dependency chain until it hits the base task
-- Task tags to enable filtering
 
 Please open an issue before starting work on anything substantial so we can align on direction. Keep PRs focused and the binary dependency-light.
 

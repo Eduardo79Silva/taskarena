@@ -38,14 +38,16 @@ func (p *PriorityLevel) Set(s string) error {
 }
 
 type Task struct {
-	ID           string        `json:"id"`
-	Name         string        `json:"name"`
-	Description  string        `json:"description"`
-	TimeEstimate int           `json:"timeEstimate"`
-	Priority     PriorityLevel `json:"priority"`
-	Tag          string        `json:"tag"`
-	CreatedAt    time.Time     `json:"created_at"`
-	CompletedAt  *time.Time    `json:"completed_at,omitempty"`
+	ID           string         `json:"id"`
+	Name         string         `json:"name"`
+	Description  string         `json:"description"`
+	TimeEstimate int            `json:"timeEstimate"`
+	TimeSpent    *time.Duration `json:"timeSpent,omitempty"`
+	Priority     PriorityLevel  `json:"priority"`
+	Tag          string         `json:"tag"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	CompletedAt  *time.Time     `json:"completed_at,omitempty"`
 }
 
 type CurrentTaskView struct {
@@ -59,5 +61,5 @@ func createTask(name string, description string, timeEstimate int, priority Prio
 	if name == "" {
 		return Task{}, errors.New("empty name")
 	}
-	return Task{uuid.New().String(), name, description, timeEstimate, priority, tag, time.Now(), nil}, nil
+	return Task{uuid.New().String(), name, description, timeEstimate, nil, priority, tag, time.Now(), time.Now(), nil}, nil
 }

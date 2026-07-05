@@ -113,6 +113,9 @@ func completeCurrentTask() {
 	now := time.Now()
 	current.CompletedAt = &now
 
+	calculateTimeSpent(&current)
+	updateTaskTime(&current)
+
 	pushTask(CompletedTasksFilePath, current)
 
 	check(clearCurrentTask())

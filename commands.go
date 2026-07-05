@@ -52,27 +52,28 @@ func runPull(args []string) {
 		tasks = filterTasksByTag(tasks, *tagFilter)
 	}
 
-	task, err := selectNextTask(tasks)
+	newTask, err := selectNextTask(tasks)
+	updateTaskTime(&newTask)
 
 	check(err)
 
 	currentTask, err := readTaskFile(CurrentTaskFilePath)
-
-	check(err)
+	updateTaskTime(&currentTask)
+	calculateTimeSpent(&currentTask)
 
 	if (currentTask != Task{}) {
 		pushTask(TasksFilePath, currentTask)
 		tasks = loadTasks()
-	} else if currentTask.ID == task.ID {
-		fmt.Println(task)
+	} else if currentTask.ID == newTask.ID {
+		fmt.Println(newTask)
 	}
 
-	writeCurrentTask(task)
-	tasks = deleteTask(tasks, task.ID)
+	writeCurrentTask(newTask)
+	tasks = deleteTask(tasks, newTask.ID)
 	writeAllTasks(tasks)
 
 	check(err)
-	fmt.Println(task)
+	fmt.Println(newTask)
 }
 
 func runDone(args []string) {

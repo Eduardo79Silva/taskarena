@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 type command struct {
@@ -16,6 +17,22 @@ var commands = []command{
 	{"done", runDone},
 	{"status", runStatus},
 	{"list", runList},
+}
+
+var AppConfig = loadAppConfig()
+
+func loadAppConfig() Config {
+	configDir, err := GetDefaultConfigDir()
+	if err != nil {
+		return DefaultConfig
+	}
+
+	conf, err := LoadConfig(filepath.Join(configDir, "config.toml"))
+	if err != nil {
+		return DefaultConfig
+	}
+
+	return *conf
 }
 
 func main() {

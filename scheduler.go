@@ -9,16 +9,6 @@ import (
 
 var errEmptyTaskList = errors.New("no tasks to pull from")
 
-const (
-	priorityWeight = 0.5
-	timeWeight     = 0.2
-	agingWeight    = 0.3
-)
-
-const selectionSharpness = 2.15
-
-const agingHorizon = 7 * 24.0
-
 func filterTasksByTag(tasks []Task, tag string) []Task {
 	var filteredTasks []Task
 
@@ -42,9 +32,9 @@ func wsmScore(t Task, minTime, maxTime int) float64 {
 
 	age := time.Since(t.CreatedAt).Hours()
 
-	normAge := min(age/agingHorizon, 1.0)
+	normAge := min(age/AppConfig.Scheduler.AgingHorizonHours, 1.0)
 
-	return priorityWeight*normPriority + timeWeight*normTime + agingWeight*normAge
+	return AppConfig.Scheduler.PriorityWeight*normPriority + AppConfig.Scheduler.TimeWeight*normTime + AppConfig.Scheduler.AgingWeight*normAge
 }
 
 func selectNextTask(tasks []Task) (Task, error) {
@@ -65,7 +55,7 @@ func selectNextTask(tasks []Task) (Task, error) {
 	scores := make([]float64, len(tasks))
 	total := 0.0
 	for i, t := range tasks {
-		scores[i] = math.Pow(wsmScore(t, minTime, maxTime), selectionSharpness)
+		scores[i] = math.Pow(wsmScore(t, minTime, maxTime), AppConfig.Scheduler.SelectionSharpness)
 		total += scores[i]
 	}
 

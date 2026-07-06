@@ -10,7 +10,7 @@ import (
 func runPush(args []string) {
 	cmd := flag.NewFlagSet("push", flag.ExitOnError)
 
-	var priority PriorityLevel = MediumPriority
+	var priority PriorityLevel = AppConfig.Defaults.Priority
 	cmd.Var(&priority, "priority", "priority (low|medium|high|veryhigh)")
 	cmd.Var(&priority, "p", "priority (shorthand)")
 
@@ -22,8 +22,8 @@ func runPush(args []string) {
 	cmd.StringVar(&description, "desc", "", "description")
 	cmd.StringVar(&description, "d", "", "description (shorthand)")
 
-	timeEstimate := cmd.Int("time", 25, "time estimate for the task")
-	cmd.IntVar(timeEstimate, "t", 25, "time estimate (shorthand)")
+	timeEstimate := cmd.Int("time", AppConfig.Defaults.TimeEstimate, "time estimate for the task")
+	cmd.IntVar(timeEstimate, "t", AppConfig.Defaults.TimeEstimate, "time estimate (shorthand)")
 
 	var tag string
 	cmd.StringVar(&tag, "tag", "", "tag")

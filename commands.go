@@ -120,9 +120,17 @@ func runList(args []string) {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
-	fmt.Fprintln(w, "PRIORITY\tTIME\tNAME")
+	fmt.Fprintln(w, "TAG\tPRIORITY\tTIME\tNAME")
 	for _, t := range tasks {
-		fmt.Fprintf(w, "%s\t%dm\t%s\n", t.Priority.String(), t.TimeEstimate, t.Name)
+		fmt.Fprintf(w, "%s\t%s\t%dm\t%s\n", t.Tag, t.Priority.String(), t.TimeEstimate, t.Name)
 	}
 	w.Flush()
+}
+
+func runEdit(args []string) {
+	cmd := flag.NewFlagSet("edit", flag.ExitOnError)
+	cmd.Parse(args)
+
+	EditFile(TasksFilePath)
+
 }

@@ -17,6 +17,7 @@ var commands = []command{
 	{"done", runDone},
 	{"status", runStatus},
 	{"list", runList},
+	{"edit", runEdit},
 }
 
 var AppConfig = loadAppConfig()

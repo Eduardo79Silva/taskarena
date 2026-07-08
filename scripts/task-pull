@@ -2,7 +2,9 @@
 
 set -euo pipefail
 
-taskarena pull
+tag=$(walker --dmenu -p "Tag (optional):") || true
+
+taskarena pull --tag $tag
 output=$(taskarena status --format notify)
 task_line=$(echo "$output" | tail -n 1)
 

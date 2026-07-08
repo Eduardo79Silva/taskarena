@@ -5,9 +5,6 @@ import (
 	"testing"
 )
 
-// See the comment in storage_test.go: these tests use withTempStoragePaths
-// and must not run in parallel.
-
 func TestGetCurrentTaskView_NoCurrentTaskReturnsNil(t *testing.T) {
 	withTempStoragePaths(t)
 
@@ -38,7 +35,6 @@ func TestGetCurrentTaskView_ReturnsCurrentTaskFields(t *testing.T) {
 	}
 }
 
-// --- formatWaybar ---
 func TestFormatWaybar_NilView(t *testing.T) {
 	out, err := formatWaybar(nil)
 	if err != nil {
@@ -80,10 +76,6 @@ func TestFormatWaybar_WithView(t *testing.T) {
 	}
 }
 
-// --- formatNotification / formatPlain ---
-//
-// These two are simple string builders, so a table keyed on the function
-// itself keeps the "nil view" case from being written out twice.
 func TestFormatters_NilView(t *testing.T) {
 	tests := []struct {
 		name string

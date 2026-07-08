@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-// --- PriorityLevel.String ---
-//
-// Table-driven tests are the idiomatic Go way to check several input/output
-// pairs against the same logic: define the cases as data, then loop over
-// them with t.Run so each case shows up as its own named test result.
 func TestPriorityLevel_String(t *testing.T) {
 	tests := []struct {
 		name string
@@ -32,7 +27,6 @@ func TestPriorityLevel_String(t *testing.T) {
 	}
 }
 
-// --- PriorityLevel.Set ---
 func TestPriorityLevel_Set(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -70,7 +64,6 @@ func TestPriorityLevel_Set(t *testing.T) {
 	}
 }
 
-// --- createTask ---
 func TestCreateTask_EmptyNameReturnsError(t *testing.T) {
 	_, err := createTask("", "desc", 25, MediumPriority, "work")
 	if err == nil {
@@ -108,17 +101,12 @@ func TestCreateTask_ValidInputPopulatesFields(t *testing.T) {
 	if task.CompletedAt != nil {
 		t.Errorf("CompletedAt = %v, want nil", task.CompletedAt)
 	}
-	// CreatedAt should be set to "now" at call time, not zero-valued and
-	// not from some earlier/later point. Bracketing it between two
-	// timestamps taken around the call is more robust than comparing
-	// against time.Now() a second time, which would be flaky.
+
 	if task.CreatedAt.Before(before) || task.CreatedAt.After(after) {
 		t.Errorf("CreatedAt = %v, want between %v and %v", task.CreatedAt, before, after)
 	}
 }
 
-// Two tasks created back to back must not collide on ID: this is what
-// actually exercises the uuid dependency, rather than just trusting it.
 func TestCreateTask_GeneratesUniqueIDs(t *testing.T) {
 	t1, err := createTask("a", "", 10, LowPriority, "")
 	if err != nil {

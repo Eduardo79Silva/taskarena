@@ -5,12 +5,6 @@ import (
 	"testing"
 )
 
-// These tests call withTempStoragePaths(t), which repoints
-// TasksFilePath / CurrentTaskFilePath / CompletedTasksFilePath at a
-// t.TempDir() for the duration of the test. Do NOT add t.Parallel() to
-// tests in this file: they share and mutate that package state, so
-// running them concurrently would race.
-
 func TestReadTasksFile_MissingFileReturnsEmptySlice(t *testing.T) {
 	withTempStoragePaths(t)
 
@@ -53,10 +47,6 @@ func TestWriteReadTasksFile_RoundTrip(t *testing.T) {
 func TestReadTaskFile_MissingFileReturnsError(t *testing.T) {
 	withTempStoragePaths(t)
 
-	// Unlike readTasksFile (list), readTaskFile (single task) does not
-	// swallow a missing file into a zero value - it surfaces the error
-	// so callers like getCurrentTaskView can check os.IsNotExist
-	// themselves. This test documents that asymmetry.
 	_, err := readTaskFile(CurrentTaskFilePath)
 	if err == nil {
 		t.Fatal("expected an error for a missing file, got nil")
@@ -131,10 +121,6 @@ func TestDeleteTaskFromFile_RemovesTaskAndPersists(t *testing.T) {
 	}
 }
 
-// --- deleteTask ---
-//
-// This is a pure function (no file I/O), so it doesn't need
-// withTempStoragePaths at all - just plain inputs and outputs.
 func TestDeleteTask_RemovesMatchingID(t *testing.T) {
 	tasks := []Task{
 		makeTask("1", MediumPriority, 25, ""),
@@ -164,7 +150,6 @@ func TestDeleteTask_UnknownIDIsNoOp(t *testing.T) {
 	}
 }
 
-// --- completeCurrentTask ---
 func TestCompleteCurrentTask_MovesTaskToCompletedAndClearsCurrent(t *testing.T) {
 	withTempStoragePaths(t)
 
@@ -173,12 +158,10 @@ func TestCompleteCurrentTask_MovesTaskToCompletedAndClearsCurrent(t *testing.T) 
 
 	completeCurrentTask()
 
-	// current.json should be gone.
 	if _, err := os.Stat(CurrentTaskFilePath); !os.IsNotExist(err) {
 		t.Errorf("expected current task file to be removed, stat err = %v", err)
 	}
 
-	// completed.json should contain the task, now with CompletedAt set.
 	completed, err := readTasksFile(CompletedTasksFilePath)
 	if err != nil {
 		t.Fatalf("readTasksFile(completed): %v", err)

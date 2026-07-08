@@ -22,6 +22,19 @@ func filterTasksByTag(tasks []Task, tag string) []Task {
 	return filteredTasks
 }
 
+func filterTasksByTime(tasks []Task, timeLimit int) []Task {
+	var filteredTasks []Task
+
+	for _, task := range tasks {
+		if task.TimeEstimate <= timeLimit {
+			filteredTasks = append(filteredTasks, task)
+
+		}
+	}
+
+	return filteredTasks
+}
+
 func wsmScore(t Task, minTime, maxTime int) float64 {
 	normPriority := float64(t.Priority) / float64(VeryHighPriority)
 

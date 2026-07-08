@@ -42,6 +42,7 @@ func runPull(args []string) {
 	cmd := flag.NewFlagSet("pull", flag.ExitOnError)
 
 	tagFilter := cmd.String("tag", "", "filter by tag")
+	timeFilter := cmd.Int("time", -1, "filter by time")
 
 	cmd.Parse(args)
 
@@ -50,6 +51,10 @@ func runPull(args []string) {
 
 	if *tagFilter != "" {
 		tasks = filterTasksByTag(tasks, *tagFilter)
+	}
+
+	if *timeFilter != -1 {
+		tasks = filterTasksByTime(tasks, *timeFilter)
 	}
 
 	newTask, err := selectNextTask(tasks)

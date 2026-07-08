@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// --- filterTasksByTag ---
 func TestFilterTasksByTag(t *testing.T) {
 	tasks := []Task{
 		makeTask("1", MediumPriority, 25, "work"),
@@ -25,6 +24,26 @@ func TestFilterTasksByTag(t *testing.T) {
 	}
 }
 
+func TestFilterTasksByTime(t *testing.T) {
+	tasks := []Task{
+		makeTask("1", MediumPriority, 50, "work"),
+		makeTask("2", MediumPriority, 25, "home"),
+		makeTask("3", MediumPriority, 5, "work"),
+	}
+
+	got := filterTasksByTime(tasks, 25)
+
+	if len(got) != 2 {
+		t.Fatalf("got %d tasks, want 2", len(got))
+	}
+
+	for _, task := range got {
+		if task.TimeEstimate > 25 {
+			t.Errorf("filterTasksByTag returned task with tag %q, want %q", task.Tag, "work")
+		}
+	}
+}
+
 func TestFilterTasksByTag_NoMatches(t *testing.T) {
 	tasks := []Task{makeTask("1", MediumPriority, 25, "work")}
 
@@ -35,16 +54,10 @@ func TestFilterTasksByTag_NoMatches(t *testing.T) {
 	}
 }
 
-// --- wsmScore ---
-//
-// wsmScore blends three normalized factors (priority, time, age). Rather
-// than pin down an exact float value (brittle, and not what we actually
-// care about), these tests check the *direction* each factor pushes the
-// score: that's the actual behavior the scheduler depends on.
 func TestWsmScore_HigherPriorityScoresHigher(t *testing.T) {
 	low := makeTask("low", LowPriority, 25, "")
 	high := makeTask("high", HighPriority, 25, "")
-	// Same CreatedAt so age contributes equally to both.
+
 	now := time.Now()
 	low.CreatedAt = now
 	high.CreatedAt = now
@@ -89,9 +102,7 @@ func TestWsmScore_OlderTaskScoresHigher(t *testing.T) {
 }
 
 func TestWsmScore_SingleTimeValueDoesNotDivideByZero(t *testing.T) {
-	// When every task has the same estimate, minTime == maxTime. The
-	// function has an explicit guard for this; this test pins that
-	// behavior down so it can't regress into a division by zero.
+
 	task := makeTask("1", MediumPriority, 25, "")
 	score := wsmScore(task, 25, 25)
 
@@ -100,7 +111,6 @@ func TestWsmScore_SingleTimeValueDoesNotDivideByZero(t *testing.T) {
 	}
 }
 
-// --- selectNextTask ---
 func TestSelectNextTask_EmptyListReturnsError(t *testing.T) {
 	_, err := selectNextTask(nil)
 	if err != errEmptyTaskList {
@@ -120,10 +130,6 @@ func TestSelectNextTask_SingleTaskIsAlwaysReturned(t *testing.T) {
 	}
 }
 
-// selectNextTask is randomized by design, so we can't assert which task
-// comes back on a given run. What we *can* assert, many times over, is
-// the invariant that matters: the result always comes from the input
-// list. That's what callers actually rely on.
 func TestSelectNextTask_AlwaysReturnsATaskFromTheList(t *testing.T) {
 	tasks := []Task{
 		makeTask("1", LowPriority, 10, ""),

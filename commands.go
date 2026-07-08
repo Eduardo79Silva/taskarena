@@ -57,7 +57,7 @@ func runPull(args []string) {
 
 	check(err)
 
-	currentTask, err := readTaskFile(CurrentTaskFilePath)
+	currentTask, _ := readTaskFile(CurrentTaskFilePath)
 	updateTaskTime(&currentTask)
 	calculateTimeSpent(&currentTask)
 
@@ -72,7 +72,6 @@ func runPull(args []string) {
 	tasks = deleteTask(tasks, newTask.ID)
 	writeAllTasks(tasks)
 
-	check(err)
 	fmt.Println(newTask)
 }
 
@@ -131,6 +130,8 @@ func runEdit(args []string) {
 	cmd := flag.NewFlagSet("edit", flag.ExitOnError)
 	cmd.Parse(args)
 
-	EditFile(TasksFilePath)
+	if err := EditFile(TasksFilePath); err != nil {
+		panic(err)
+	}
 
 }

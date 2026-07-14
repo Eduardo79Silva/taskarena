@@ -1,4 +1,4 @@
-module taskarena
+module github.com/eduardo79silva/taskarena
 
 go 1.26.3
 

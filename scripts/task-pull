@@ -3,8 +3,15 @@
 set -euo pipefail
 
 tag=$(walker --dmenu -p "Tag (optional):") || true
+time=$(walker --dmenu -p "Time (optional):") || true
 
-taskarena pull --tag $tag
+args=()
+
+[[ -n "$tag" ]] && args+=(--tag "$tag")
+[[ -n "$time" ]] && args+=(--time "$time")
+
+taskarena pull "${args[@]}"
+
 output=$(taskarena status --format notify)
 task_line=$(echo "$output" | tail -n 1)
 

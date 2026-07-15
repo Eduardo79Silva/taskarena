@@ -1,16 +1,19 @@
-package main
+package actions
 
 import (
 	"flag"
 	"fmt"
 	"os"
 	"text/tabwriter"
+
+	"github.com/eduardo79silva/taskarena/internal/priority"
+	"github.com/eduardo79silva/taskarena/internal/task"
 )
 
 func runPush(args []string) {
 	cmd := flag.NewFlagSet("push", flag.ExitOnError)
 
-	var priority PriorityLevel = AppConfig.Defaults.Priority
+	var priority priority.Level = AppConfig.Defaults.Priority
 	cmd.Var(&priority, "priority", "priority (low|medium|high|veryhigh)")
 	cmd.Var(&priority, "p", "priority (shorthand)")
 
@@ -66,7 +69,7 @@ func runPull(args []string) {
 	updateTaskTime(&currentTask)
 	calculateTimeSpent(&currentTask)
 
-	if (currentTask != Task{}) {
+	if (currentTask != task.Task{}) {
 		pushTask(TasksFilePath, currentTask)
 		tasks = loadTasks()
 	} else if currentTask.ID == newTask.ID {

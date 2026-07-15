@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/BurntSushi/toml"
+	"github.com/eduardo79silva/taskarena/internal/priority"
 	"github.com/mitchellh/go-homedir"
 )
 
@@ -41,12 +42,12 @@ func GetDefaultConfigDir() (string, error) {
 }
 
 type Config struct {
-	Scheduler SchedulerOptions
-	Defaults  TaskDefaults
-	Status    StatusOptions
+	Scheduler SchedulerConfig
+	Defaults  TaskConfig
+	Status    StatusConfig
 }
 
-type SchedulerOptions struct {
+type SchedulerConfig struct {
 	PriorityWeight     float64
 	TimeWeight         float64
 	AgingWeight        float64
@@ -54,35 +55,35 @@ type SchedulerOptions struct {
 	AgingHorizonHours  float64
 }
 
-type TaskDefaults struct {
-	Priority     PriorityLevel
+type TaskConfig struct {
+	Priority     priority.Level
 	TimeEstimate int
 }
 
-type StatusOptions struct {
+type StatusConfig struct {
 	Format string
 }
 
 var DefaultConfig = Config{
-	Scheduler: SchedulerOptions{
+	Scheduler: SchedulerConfig{
 		PriorityWeight:     0.5,
 		TimeWeight:         0.2,
 		AgingWeight:        0.3,
 		SelectionSharpness: 2.15,
 		AgingHorizonHours:  7 * 24.0,
 	},
-	Defaults: TaskDefaults{
-		Priority:     MediumPriority,
+	Defaults: TaskConfig{
+		Priority:     priority.Medium,
 		TimeEstimate: 25,
 	},
-	Status: StatusOptions{
+	Status: StatusConfig{
 		Format: "plain",
 	},
 }
 
 func LoadConfig(configFile string) (*Config, error) {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		return nil, errors.New("Config file does not exist.")
+		return nil, errors.New("config file does not exist")
 	} else if err != nil {
 		return nil, err
 	}

@@ -1,12 +1,14 @@
-package main
+package testutil
 
 import (
-	"testing"
 	"time"
+
+	"github.com/eduardo79silva/taskarena/internal/priority"
+	"github.com/eduardo79silva/taskarena/internal/task"
 )
 
-func makeTask(id string, priority PriorityLevel, timeEstimate int, tag string) Task {
-	return Task{
+func MakeTask(id string, priority priority.Level, timeEstimate int, tag string) task.Task {
+	return task.Task{
 		ID:           id,
 		Name:         "task-" + id,
 		Description:  "description for " + id,
@@ -15,24 +17,4 @@ func makeTask(id string, priority PriorityLevel, timeEstimate int, tag string) T
 		Tag:          tag,
 		CreatedAt:    time.Now(),
 	}
-}
-
-func withTempStoragePaths(t *testing.T) {
-	t.Helper()
-
-	dir := t.TempDir()
-
-	origTasks := TasksFilePath
-	origCurrent := CurrentTaskFilePath
-	origCompleted := CompletedTasksFilePath
-
-	TasksFilePath = dir + "/tasks.json"
-	CurrentTaskFilePath = dir + "/current.json"
-	CompletedTasksFilePath = dir + "/completed.json"
-
-	t.Cleanup(func() {
-		TasksFilePath = origTasks
-		CurrentTaskFilePath = origCurrent
-		CompletedTasksFilePath = origCompleted
-	})
 }

@@ -1,20 +1,22 @@
-package main
+package task
 
 import (
 	"testing"
 	"time"
+
+	"github.com/eduardo79silva/taskarena/internal/priority"
 )
 
 func TestPriorityLevel_String(t *testing.T) {
 	tests := []struct {
 		name string
-		p    PriorityLevel
+		p    priority.Level
 		want string
 	}{
-		{"low", LowPriority, "low"},
-		{"medium", MediumPriority, "medium"},
-		{"high", HighPriority, "high"},
-		{"veryhigh", VeryHighPriority, "veryhigh"},
+		{"low", priority.Low, "low"},
+		{"medium", priority.Medium, "medium"},
+		{"high", priority.High, "high"},
+		{"veryhigh", priority.VeryHigh, "veryhigh"},
 	}
 
 	for _, tt := range tests {
@@ -31,20 +33,20 @@ func TestPriorityLevel_Set(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
-		want    PriorityLevel
+		want    priority.Level
 		wantErr bool
 	}{
-		{"low", "low", LowPriority, false},
-		{"medium", "medium", MediumPriority, false},
-		{"high", "high", HighPriority, false},
-		{"veryhigh", "veryhigh", VeryHighPriority, false},
-		{"case insensitive", "HIGH", HighPriority, false},
-		{"invalid", "urgent", LowPriority, true},
+		{"low", "low", priority.Low, false},
+		{"medium", "medium", priority.Medium, false},
+		{"high", "high", priority.High, false},
+		{"veryhigh", "veryhigh", priority.VeryHigh, false},
+		{"case insensitive", "HIGH", priority.High, false},
+		{"invalid", "urgent", priority.Low, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var p PriorityLevel
+			var p priority.Level
 			err := p.Set(tt.input)
 
 			if tt.wantErr {
@@ -65,7 +67,7 @@ func TestPriorityLevel_Set(t *testing.T) {
 }
 
 func TestCreateTask_EmptyNameReturnsError(t *testing.T) {
-	_, err := createTask("", "desc", 25, MediumPriority, "work")
+	_, err := createTask("", "desc", 25, priority.Medium, "work")
 	if err == nil {
 		t.Fatal("createTask with empty name: expected an error, got nil")
 	}
@@ -73,7 +75,7 @@ func TestCreateTask_EmptyNameReturnsError(t *testing.T) {
 
 func TestCreateTask_ValidInputPopulatesFields(t *testing.T) {
 	before := time.Now()
-	task, err := createTask("Write tests", "cover the core logic", 30, HighPriority, "work")
+	task, err := createTask("Write tests", "cover the core logic", 30, priority.High, "work")
 	after := time.Now()
 
 	if err != nil {
@@ -92,8 +94,8 @@ func TestCreateTask_ValidInputPopulatesFields(t *testing.T) {
 	if task.TimeEstimate != 30 {
 		t.Errorf("TimeEstimate = %d, want 30", task.TimeEstimate)
 	}
-	if task.Priority != HighPriority {
-		t.Errorf("Priority = %v, want %v", task.Priority, HighPriority)
+	if task.Priority != priority.High {
+		t.Errorf("Priority = %v, want %v", task.Priority, priority.High)
 	}
 	if task.Tag != "work" {
 		t.Errorf("Tag = %q, want %q", task.Tag, "work")
@@ -108,11 +110,11 @@ func TestCreateTask_ValidInputPopulatesFields(t *testing.T) {
 }
 
 func TestCreateTask_GeneratesUniqueIDs(t *testing.T) {
-	t1, err := createTask("a", "", 10, LowPriority, "")
+	t1, err := createTask("a", "", 10, priority.Low, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	t2, err := createTask("b", "", 10, LowPriority, "")
+	t2, err := createTask("b", "", 10, priority.Low, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

@@ -1,14 +1,38 @@
-package main
+package store
 
 import (
 	"os"
 	"testing"
+
+	"github.com/eduardo79silva/taskarena/internal/priority"
+	"github.com/eduardo79silva/taskarena/internal/task"
+	"github.com/eduardo79silva/taskarena/internal/testutil"
 )
+
+func withTempStoragePaths(t *testing.T) {
+	t.Helper()
+
+	dir := t.TempDir()
+
+	origTasks := TasksFilePath
+	origCurrent := CurrentTaskFilePath
+	origCompleted := CompletedTasksFilePath
+
+	TasksFilePath = dir + "/tasks.json"
+	CurrentTaskFilePath = dir + "/current.json"
+	CompletedTasksFilePath = dir + "/completed.json"
+
+	t.Cleanup(func() {
+		TasksFilePath = origTasks
+		CurrentTaskFilePath = origCurrent
+		CompletedTasksFilePath = origCompleted
+	})
+}
 
 func TestReadTasksFile_MissingFileReturnsEmptySlice(t *testing.T) {
 	withTempStoragePaths(t)
 
-	tasks, err := readTasksFile(TasksFilePath)
+	tasks, err := ReadTasksFile(TasksFilePath)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -20,16 +44,16 @@ func TestReadTasksFile_MissingFileReturnsEmptySlice(t *testing.T) {
 func TestWriteReadTasksFile_RoundTrip(t *testing.T) {
 	withTempStoragePaths(t)
 
-	want := []Task{
-		makeTask("1", HighPriority, 25, "work"),
-		makeTask("2", LowPriority, 10, "home"),
+	want := []task.Task{
+		testutil.MakeTask("1", priority.High, 25, "work"),
+		testutil.MakeTask("2", priority.Low, 10, "home"),
 	}
 
-	if err := writeTasksFile(TasksFilePath, want); err != nil {
+	if err := WriteTasksFile(TasksFilePath, want); err != nil {
 		t.Fatalf("writeTasksFile: %v", err)
 	}
 
-	got, err := readTasksFile(TasksFilePath)
+	got, err := ReadTasksFile(TasksFilePath)
 	if err != nil {
 		t.Fatalf("readTasksFile: %v", err)
 	}
@@ -47,7 +71,7 @@ func TestWriteReadTasksFile_RoundTrip(t *testing.T) {
 func TestReadTaskFile_MissingFileReturnsError(t *testing.T) {
 	withTempStoragePaths(t)
 
-	_, err := readTaskFile(CurrentTaskFilePath)
+	_, err := ReadTaskFile(CurrentTaskFilePath)
 	if err == nil {
 		t.Fatal("expected an error for a missing file, got nil")
 	}
@@ -59,13 +83,13 @@ func TestReadTaskFile_MissingFileReturnsError(t *testing.T) {
 func TestWriteReadTaskFile_RoundTrip(t *testing.T) {
 	withTempStoragePaths(t)
 
-	want := makeTask("1", HighPriority, 25, "work")
+	want := testutil.MakeTask("1", priority.High, 25, "work")
 
-	if err := writeTaskFile(CurrentTaskFilePath, want); err != nil {
+	if err := WriteTaskFile(CurrentTaskFilePath, want); err != nil {
 		t.Fatalf("writeTaskFile: %v", err)
 	}
 
-	got, err := readTaskFile(CurrentTaskFilePath)
+	got, err := ReadTaskFile(CurrentTaskFilePath)
 	if err != nil {
 		t.Fatalf("readTaskFile: %v", err)
 	}
@@ -77,13 +101,13 @@ func TestWriteReadTaskFile_RoundTrip(t *testing.T) {
 func TestPushTask_AppendsToExistingFile(t *testing.T) {
 	withTempStoragePaths(t)
 
-	first := makeTask("1", MediumPriority, 25, "")
-	second := makeTask("2", MediumPriority, 25, "")
+	first := testutil.MakeTask("1", priority.Medium, 25, "")
+	second := testutil.MakeTask("2", priority.Medium, 25, "")
 
-	pushTask(TasksFilePath, first)
-	pushTask(TasksFilePath, second)
+	PushTask(TasksFilePath, first)
+	PushTask(TasksFilePath, second)
 
-	tasks, err := readTasksFile(TasksFilePath)
+	tasks, err := ReadTasksFile(TasksFilePath)
 	if err != nil {
 		t.Fatalf("readTasksFile: %v", err)
 	}
@@ -95,10 +119,10 @@ func TestPushTask_AppendsToExistingFile(t *testing.T) {
 func TestWriteAllTasks_AndLoadTasks_RoundTrip(t *testing.T) {
 	withTempStoragePaths(t)
 
-	want := []Task{makeTask("1", MediumPriority, 25, "")}
-	writeAllTasks(want)
+	want := []task.Task{testutil.MakeTask("1", priority.Medium, 25, "")}
+	WriteAllTasks(want)
 
-	got := loadTasks()
+	got := LoadTasks()
 
 	if len(got) != 1 || got[0].ID != want[0].ID {
 		t.Errorf("got %+v, want %+v", got, want)
@@ -108,27 +132,27 @@ func TestWriteAllTasks_AndLoadTasks_RoundTrip(t *testing.T) {
 func TestDeleteTaskFromFile_RemovesTaskAndPersists(t *testing.T) {
 	withTempStoragePaths(t)
 
-	writeAllTasks([]Task{
-		makeTask("1", MediumPriority, 25, ""),
-		makeTask("2", MediumPriority, 25, ""),
+	WriteAllTasks([]task.Task{
+		testutil.MakeTask("1", priority.Medium, 25, ""),
+		testutil.MakeTask("2", priority.Medium, 25, ""),
 	})
 
-	deleteTaskFromFile(TasksFilePath, "1")
+	DeleteTaskFromFile(TasksFilePath, "1")
 
-	got := loadTasks()
+	got := LoadTasks()
 	if len(got) != 1 || got[0].ID != "2" {
 		t.Errorf("got %+v, want only task 2 remaining", got)
 	}
 }
 
 func TestDeleteTask_RemovesMatchingID(t *testing.T) {
-	tasks := []Task{
-		makeTask("1", MediumPriority, 25, ""),
-		makeTask("2", MediumPriority, 25, ""),
-		makeTask("3", MediumPriority, 25, ""),
+	tasks := []task.Task{
+		testutil.MakeTask("1", priority.Medium, 25, ""),
+		testutil.MakeTask("2", priority.Medium, 25, ""),
+		testutil.MakeTask("3", priority.Medium, 25, ""),
 	}
 
-	got := deleteTask(tasks, "2")
+	got := DeleteTask(tasks, "2")
 
 	if len(got) != 2 {
 		t.Fatalf("got %d tasks, want 2", len(got))
@@ -141,9 +165,9 @@ func TestDeleteTask_RemovesMatchingID(t *testing.T) {
 }
 
 func TestDeleteTask_UnknownIDIsNoOp(t *testing.T) {
-	tasks := []Task{makeTask("1", MediumPriority, 25, "")}
+	tasks := []task.Task{testutil.MakeTask("1", priority.Medium, 25, "")}
 
-	got := deleteTask(tasks, "does-not-exist")
+	got := DeleteTask(tasks, "does-not-exist")
 
 	if len(got) != 1 {
 		t.Errorf("got %d tasks, want 1 (unchanged)", len(got))
@@ -153,16 +177,16 @@ func TestDeleteTask_UnknownIDIsNoOp(t *testing.T) {
 func TestCompleteCurrentTask_MovesTaskToCompletedAndClearsCurrent(t *testing.T) {
 	withTempStoragePaths(t)
 
-	current := makeTask("1", HighPriority, 25, "work")
-	writeCurrentTask(current)
+	current := testutil.MakeTask("1", priority.High, 25, "work")
+	WriteCurrentTask(current)
 
-	completeCurrentTask()
+	CompleteCurrentTask()
 
 	if _, err := os.Stat(CurrentTaskFilePath); !os.IsNotExist(err) {
 		t.Errorf("expected current task file to be removed, stat err = %v", err)
 	}
 
-	completed, err := readTasksFile(CompletedTasksFilePath)
+	completed, err := ReadTasksFile(CompletedTasksFilePath)
 	if err != nil {
 		t.Fatalf("readTasksFile(completed): %v", err)
 	}

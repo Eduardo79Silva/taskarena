@@ -1,7 +1,8 @@
-package main
+package store
 
 import (
 	"encoding/json"
+	"github.com/eduardo79silva/taskarena/internal/task"
 	"os"
 	"path/filepath"
 	"time"
@@ -24,34 +25,34 @@ func check(e error) {
 	}
 }
 
-func readTasksFile(filePath string) ([]Task, error) {
+func ReadTasksFile(filePath string) ([]task.Task, error) {
 	dat, err := os.ReadFile(filePath)
 	if os.IsNotExist(err) {
-		return []Task{}, nil
+		return []task.Task{}, nil
 	}
 	if err != nil {
 		return nil, err
 	}
 	if len(dat) == 0 {
-		return []Task{}, nil
+		return []task.Task{}, nil
 	}
 
-	var tasks []Task
+	var tasks []task.Task
 	err = json.Unmarshal(dat, &tasks)
 	return tasks, err
 }
 
-func readTaskFile(filePath string) (Task, error) {
+func ReadTaskFile(filePath string) (task.Task, error) {
 	dat, err := os.ReadFile(filePath)
 	if err != nil {
-		return Task{}, err
+		return task.Task{}, err
 	}
-	var task Task
+	var task task.Task
 	err = json.Unmarshal(dat, &task)
 	return task, err
 }
 
-func writeTasksFile(filePath string, tasks []Task) error {
+func WriteTasksFile(filePath string, tasks []task.Task) error {
 	data, err := json.MarshalIndent(tasks, "", "\t")
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func writeTasksFile(filePath string, tasks []Task) error {
 	return os.WriteFile(filePath, data, 0644)
 }
 
-func writeTaskFile(filePath string, task Task) error {
+func WriteTaskFile(filePath string, task task.Task) error {
 	data, err := json.MarshalIndent(task, "", "\t")
 	if err != nil {
 		return err
@@ -67,22 +68,22 @@ func writeTaskFile(filePath string, task Task) error {
 	return os.WriteFile(filePath, data, 0644)
 }
 
-func pushTask(filePath string, task Task) {
-	tasks, err := readTasksFile(filePath)
+func PushTask(filePath string, task task.Task) {
+	tasks, err := ReadTasksFile(filePath)
 	check(err)
 	tasks = append(tasks, task)
-	check(writeTasksFile(filePath, tasks))
+	check(WriteTasksFile(filePath, tasks))
 }
 
-func writeAllTasks(tasks []Task) {
-	check(writeTasksFile(TasksFilePath, tasks))
+func WriteAllTasks(tasks []task.Task) {
+	check(WriteTasksFile(TasksFilePath, tasks))
 }
 
-func writeCurrentTask(task Task) {
-	check(writeTaskFile(CurrentTaskFilePath, task))
+func WriteCurrentTask(task task.Task) {
+	check(WriteTaskFile(CurrentTaskFilePath, task))
 }
 
-func deleteTask(tasks []Task, taskID string) []Task {
+func DeleteTask(tasks []task.Task, taskID string) []task.Task {
 	for i, task := range tasks {
 		if task.ID == taskID {
 			return append(tasks[:i], tasks[i+1:]...)
@@ -91,14 +92,14 @@ func deleteTask(tasks []Task, taskID string) []Task {
 	return tasks
 }
 
-func deleteTaskFromFile(filePath string, taskID string) {
-	tasks, err := readTasksFile(filePath)
+func DeleteTaskFromFile(filePath string, taskID string) {
+	tasks, err := ReadTasksFile(filePath)
 	check(err)
-	tasks = deleteTask(tasks, taskID)
-	check(writeTasksFile(filePath, tasks))
+	tasks = DeleteTask(tasks, taskID)
+	check(WriteTasksFile(filePath, tasks))
 }
 
-func clearCurrentTask() error {
+func ClearCurrentTask() error {
 	err := os.Remove(CurrentTaskFilePath)
 	if os.IsNotExist(err) {
 		return nil
@@ -106,8 +107,8 @@ func clearCurrentTask() error {
 	return err
 }
 
-func completeCurrentTask() {
-	current, err := readTaskFile(CurrentTaskFilePath)
+func CompleteCurrentTask() {
+	current, err := ReadTaskFile(CurrentTaskFilePath)
 	check(err)
 
 	now := time.Now()
@@ -116,13 +117,13 @@ func completeCurrentTask() {
 	calculateTimeSpent(&current)
 	updateTaskTime(&current)
 
-	pushTask(CompletedTasksFilePath, current)
+	PushTask(CompletedTasksFilePath, current)
 
-	check(clearCurrentTask())
+	check(ClearCurrentTask())
 }
 
-func loadTasks() []Task {
-	tasks, err := readTasksFile(TasksFilePath)
+func LoadTasks() []task.Task {
+	tasks, err := ReadTasksFile(TasksFilePath)
 	check(err)
 	return tasks
 }

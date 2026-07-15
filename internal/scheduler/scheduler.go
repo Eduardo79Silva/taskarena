@@ -11,42 +11,14 @@ import (
 	"github.com/eduardo79silva/taskarena/internal/task"
 )
 
+var ErrEmptyTaskList = errors.New("no tasks to pull from")
+
 type Scheduler struct {
 	cfg config.SchedulerConfig
 }
 
 func New(cfg config.SchedulerConfig) *Scheduler {
-	return &Scheduler{
-		cfg: cfg,
-	}
-}
-
-var errEmptyTaskList = errors.New("no tasks to pull from")
-
-func filterTasksByTag(tasks []task.Task, tag string) []task.Task {
-	var filteredTasks []task.Task
-
-	for _, task := range tasks {
-		if task.Tag == tag {
-			filteredTasks = append(filteredTasks, task)
-
-		}
-	}
-
-	return filteredTasks
-}
-
-func filterTasksByTime(tasks []task.Task, timeLimit int) []task.Task {
-	var filteredTasks []task.Task
-
-	for _, task := range tasks {
-		if task.TimeEstimate <= timeLimit {
-			filteredTasks = append(filteredTasks, task)
-
-		}
-	}
-
-	return filteredTasks
+	return &Scheduler{cfg: cfg}
 }
 
 func (s *Scheduler) wsmScore(t task.Task, minTime, maxTime int) float64 {
@@ -58,15 +30,14 @@ func (s *Scheduler) wsmScore(t task.Task, minTime, maxTime int) float64 {
 	}
 
 	age := time.Since(t.CreatedAt).Hours()
-
 	normAge := min(age/s.cfg.AgingHorizonHours, 1.0)
 
 	return s.cfg.PriorityWeight*normPriority + s.cfg.TimeWeight*normTime + s.cfg.AgingWeight*normAge
 }
 
-func (s *Scheduler) SelectNextTask(tasks []task.Task) (task.Task, error) {
+func (s *Scheduler) SelectNext(tasks []task.Task) (task.Task, error) {
 	if len(tasks) == 0 {
-		return task.Task{}, errEmptyTaskList
+		return task.Task{}, ErrEmptyTaskList
 	}
 
 	minTime, maxTime := tasks[0].TimeEstimate, tasks[0].TimeEstimate
@@ -92,8 +63,8 @@ func (s *Scheduler) SelectNextTask(tasks []task.Task) (task.Task, error) {
 
 	r := rand.Float64() * total
 	cumulative := 0.0
-	for i, s := range scores {
-		cumulative += s
+	for i, sc := range scores {
+		cumulative += sc
 		if r < cumulative {
 			return tasks[i], nil
 		}

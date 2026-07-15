@@ -14,6 +14,10 @@ const (
 	VeryHigh
 )
 
+func (p *Level) Type() string {
+	return "priority"
+}
+
 func (p *Level) String() string {
 	return [...]string{"low", "medium", "high", "veryhigh"}[*p]
 }

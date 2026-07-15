@@ -28,9 +28,48 @@ type CurrentTaskView struct {
 	TimeEstimate int
 }
 
-func createTask(name string, description string, timeEstimate int, priority priority.Level, tag string) (Task, error) {
+func New(name, description string, timeEstimate int, p priority.Level, tag string) (Task, error) {
 	if name == "" {
 		return Task{}, errors.New("empty name")
 	}
-	return Task{uuid.New().String(), name, description, timeEstimate, nil, priority, tag, time.Now(), time.Now(), nil}, nil
+	now := time.Now()
+	return Task{
+		ID:           uuid.New().String(),
+		Name:         name,
+		Description:  description,
+		TimeEstimate: timeEstimate,
+		Priority:     p,
+		Tag:          tag,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}, nil
+}
+
+func FilterByTag(tasks []Task, tag string) []Task {
+	var filtered []Task
+	for _, t := range tasks {
+		if t.Tag == tag {
+			filtered = append(filtered, t)
+		}
+	}
+	return filtered
+}
+
+func FilterByTime(tasks []Task, timeLimit int) []Task {
+	var filtered []Task
+	for _, t := range tasks {
+		if t.TimeEstimate <= timeLimit {
+			filtered = append(filtered, t)
+		}
+	}
+	return filtered
+}
+
+func Delete(tasks []Task, id string) []Task {
+	for i, t := range tasks {
+		if t.ID == id {
+			return append(tasks[:i], tasks[i+1:]...)
+		}
+	}
+	return tasks
 }

@@ -3,53 +3,39 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+
+	"github.com/eduardo79silva/taskarena/internal/app"
+	"github.com/eduardo79silva/taskarena/internal/cli"
+	"github.com/eduardo79silva/taskarena/internal/config"
+	"github.com/eduardo79silva/taskarena/internal/store"
 )
 
-type command struct {
-	name string
-	run  func(args []string)
-}
-
-var commands = []command{
-	{"push", runPush},
-	{"pull", runPull},
-	{"done", runDone},
-	{"status", runStatus},
-	{"list", runList},
-	{"edit", runEdit},
-}
-
-var AppConfig = loadAppConfig()
-
-func loadAppConfig() Config {
-	configDir, err := GetDefaultConfigDir()
-	if err != nil {
-		return DefaultConfig
-	}
-
-	conf, err := LoadConfig(filepath.Join(configDir, "config.toml"))
-	if err != nil {
-		return DefaultConfig
-	}
-
-	return *conf
-}
-
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("expected 'push' or 'pull' subcommands")
+	cfg := loadConfig()
+
+	s, err := store.New()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
 
-	for _, c := range commands {
-		if c.name == os.Args[1] {
-			c.run(os.Args[2:])
-			return
-		}
+	a := app.New(cfg, s)
+	root := cli.NewRootCmd(a)
+
+	if err := root.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
 	}
+}
 
-	fmt.Println("expected 'push' or 'pull' subcommands")
-
-	os.Exit(1)
+func loadConfig() *config.Config {
+	dir, err := config.GetDefaultConfigDir()
+	if err != nil {
+		return &config.DefaultConfig
+	}
+	conf, err := config.LoadConfig(dir + "/config.toml")
+	if err != nil {
+		return &config.DefaultConfig
+	}
+	return conf
 }

@@ -9,30 +9,20 @@ import (
 	"github.com/eduardo79silva/taskarena/internal/testutil"
 )
 
-func withTempStoragePaths(t *testing.T) {
+func newTestStore(t *testing.T) *Store {
 	t.Helper()
-
 	dir := t.TempDir()
-
-	origTasks := TasksFilePath
-	origCurrent := CurrentTaskFilePath
-	origCompleted := CompletedTasksFilePath
-
-	TasksFilePath = dir + "/tasks.json"
-	CurrentTaskFilePath = dir + "/current.json"
-	CompletedTasksFilePath = dir + "/completed.json"
-
-	t.Cleanup(func() {
-		TasksFilePath = origTasks
-		CurrentTaskFilePath = origCurrent
-		CompletedTasksFilePath = origCompleted
-	})
+	return &Store{
+		TasksFilePath:          dir + "/tasks.json",
+		CurrentTaskFilePath:    dir + "/current.json",
+		CompletedTasksFilePath: dir + "/completed.json",
+	}
 }
 
 func TestReadTasksFile_MissingFileReturnsEmptySlice(t *testing.T) {
-	withTempStoragePaths(t)
+	s := newTestStore(t)
 
-	tasks, err := ReadTasksFile(TasksFilePath)
+	tasks, err := readTasksFile(s.TasksFilePath)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -42,22 +32,21 @@ func TestReadTasksFile_MissingFileReturnsEmptySlice(t *testing.T) {
 }
 
 func TestWriteReadTasksFile_RoundTrip(t *testing.T) {
-	withTempStoragePaths(t)
+	s := newTestStore(t)
 
 	want := []task.Task{
 		testutil.MakeTask("1", priority.High, 25, "work"),
 		testutil.MakeTask("2", priority.Low, 10, "home"),
 	}
 
-	if err := WriteTasksFile(TasksFilePath, want); err != nil {
+	if err := writeTasksFile(s.TasksFilePath, want); err != nil {
 		t.Fatalf("writeTasksFile: %v", err)
 	}
 
-	got, err := ReadTasksFile(TasksFilePath)
+	got, err := readTasksFile(s.TasksFilePath)
 	if err != nil {
 		t.Fatalf("readTasksFile: %v", err)
 	}
-
 	if len(got) != len(want) {
 		t.Fatalf("got %d tasks, want %d", len(got), len(want))
 	}
@@ -69,9 +58,9 @@ func TestWriteReadTasksFile_RoundTrip(t *testing.T) {
 }
 
 func TestReadTaskFile_MissingFileReturnsError(t *testing.T) {
-	withTempStoragePaths(t)
+	s := newTestStore(t)
 
-	_, err := ReadTaskFile(CurrentTaskFilePath)
+	_, err := readTaskFile(s.CurrentTaskFilePath)
 	if err == nil {
 		t.Fatal("expected an error for a missing file, got nil")
 	}
@@ -81,15 +70,15 @@ func TestReadTaskFile_MissingFileReturnsError(t *testing.T) {
 }
 
 func TestWriteReadTaskFile_RoundTrip(t *testing.T) {
-	withTempStoragePaths(t)
+	s := newTestStore(t)
 
 	want := testutil.MakeTask("1", priority.High, 25, "work")
 
-	if err := WriteTaskFile(CurrentTaskFilePath, want); err != nil {
+	if err := writeTaskFile(s.CurrentTaskFilePath, want); err != nil {
 		t.Fatalf("writeTaskFile: %v", err)
 	}
 
-	got, err := ReadTaskFile(CurrentTaskFilePath)
+	got, err := readTaskFile(s.CurrentTaskFilePath)
 	if err != nil {
 		t.Fatalf("readTaskFile: %v", err)
 	}
@@ -99,15 +88,19 @@ func TestWriteReadTaskFile_RoundTrip(t *testing.T) {
 }
 
 func TestPushTask_AppendsToExistingFile(t *testing.T) {
-	withTempStoragePaths(t)
+	s := newTestStore(t)
 
 	first := testutil.MakeTask("1", priority.Medium, 25, "")
 	second := testutil.MakeTask("2", priority.Medium, 25, "")
 
-	PushTask(TasksFilePath, first)
-	PushTask(TasksFilePath, second)
+	if err := s.PushTask(first); err != nil {
+		t.Fatalf("PushTask: %v", err)
+	}
+	if err := s.PushTask(second); err != nil {
+		t.Fatalf("PushTask: %v", err)
+	}
 
-	tasks, err := ReadTasksFile(TasksFilePath)
+	tasks, err := readTasksFile(s.TasksFilePath)
 	if err != nil {
 		t.Fatalf("readTasksFile: %v", err)
 	}
@@ -117,31 +110,20 @@ func TestPushTask_AppendsToExistingFile(t *testing.T) {
 }
 
 func TestWriteAllTasks_AndLoadTasks_RoundTrip(t *testing.T) {
-	withTempStoragePaths(t)
+	s := newTestStore(t)
 
 	want := []task.Task{testutil.MakeTask("1", priority.Medium, 25, "")}
-	WriteAllTasks(want)
+	if err := s.WriteAllTasks(want); err != nil {
+		t.Fatalf("WriteAllTasks: %v", err)
+	}
 
-	got := LoadTasks()
+	got, err := s.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks: %v", err)
+	}
 
 	if len(got) != 1 || got[0].ID != want[0].ID {
 		t.Errorf("got %+v, want %+v", got, want)
-	}
-}
-
-func TestDeleteTaskFromFile_RemovesTaskAndPersists(t *testing.T) {
-	withTempStoragePaths(t)
-
-	WriteAllTasks([]task.Task{
-		testutil.MakeTask("1", priority.Medium, 25, ""),
-		testutil.MakeTask("2", priority.Medium, 25, ""),
-	})
-
-	DeleteTaskFromFile(TasksFilePath, "1")
-
-	got := LoadTasks()
-	if len(got) != 1 || got[0].ID != "2" {
-		t.Errorf("got %+v, want only task 2 remaining", got)
 	}
 }
 
@@ -152,13 +134,13 @@ func TestDeleteTask_RemovesMatchingID(t *testing.T) {
 		testutil.MakeTask("3", priority.Medium, 25, ""),
 	}
 
-	got := DeleteTask(tasks, "2")
+	got := task.Delete(tasks, "2")
 
 	if len(got) != 2 {
 		t.Fatalf("got %d tasks, want 2", len(got))
 	}
-	for _, task := range got {
-		if task.ID == "2" {
+	for _, tsk := range got {
+		if tsk.ID == "2" {
 			t.Error("task with ID 2 was not removed")
 		}
 	}
@@ -167,7 +149,7 @@ func TestDeleteTask_RemovesMatchingID(t *testing.T) {
 func TestDeleteTask_UnknownIDIsNoOp(t *testing.T) {
 	tasks := []task.Task{testutil.MakeTask("1", priority.Medium, 25, "")}
 
-	got := DeleteTask(tasks, "does-not-exist")
+	got := task.Delete(tasks, "does-not-exist")
 
 	if len(got) != 1 {
 		t.Errorf("got %d tasks, want 1 (unchanged)", len(got))
@@ -175,18 +157,22 @@ func TestDeleteTask_UnknownIDIsNoOp(t *testing.T) {
 }
 
 func TestCompleteCurrentTask_MovesTaskToCompletedAndClearsCurrent(t *testing.T) {
-	withTempStoragePaths(t)
+	s := newTestStore(t)
 
 	current := testutil.MakeTask("1", priority.High, 25, "work")
-	WriteCurrentTask(current)
+	if err := s.WriteCurrentTask(current); err != nil {
+		t.Fatalf("WriteCurrentTask: %v", err)
+	}
 
-	CompleteCurrentTask()
+	if err := s.CompleteCurrentTask(); err != nil {
+		t.Fatalf("CompleteCurrentTask: %v", err)
+	}
 
-	if _, err := os.Stat(CurrentTaskFilePath); !os.IsNotExist(err) {
+	if _, err := os.Stat(s.CurrentTaskFilePath); !os.IsNotExist(err) {
 		t.Errorf("expected current task file to be removed, stat err = %v", err)
 	}
 
-	completed, err := ReadTasksFile(CompletedTasksFilePath)
+	completed, err := readTasksFile(s.CompletedTasksFilePath)
 	if err != nil {
 		t.Fatalf("readTasksFile(completed): %v", err)
 	}

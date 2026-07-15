@@ -16,14 +16,14 @@ func TestFilterTasksByTag(t *testing.T) {
 		testutil.MakeTask("3", priority.Medium, 25, "work"),
 	}
 
-	got := filterTasksByTag(tasks, "work")
+	got := task.FilterByTag(tasks, "work")
 
 	if len(got) != 2 {
 		t.Fatalf("got %d tasks, want 2", len(got))
 	}
-	for _, task := range got {
-		if task.Tag != "work" {
-			t.Errorf("filterTasksByTag returned task with tag %q, want %q", task.Tag, "work")
+	for _, tsk := range got {
+		if tsk.Tag != "work" {
+			t.Errorf("FilterByTag returned task with tag %q, want %q", tsk.Tag, "work")
 		}
 	}
 }
@@ -35,15 +35,14 @@ func TestFilterTasksByTime(t *testing.T) {
 		testutil.MakeTask("3", priority.Medium, 5, "work"),
 	}
 
-	got := filterTasksByTime(tasks, 25)
+	got := task.FilterByTime(tasks, 25)
 
 	if len(got) != 2 {
 		t.Fatalf("got %d tasks, want 2", len(got))
 	}
-
-	for _, task := range got {
-		if task.TimeEstimate > 25 {
-			t.Errorf("filterTasksByTag returned task with tag %q, want %q", task.Tag, "work")
+	for _, tsk := range got {
+		if tsk.TimeEstimate > 25 {
+			t.Errorf("FilterByTime returned task with estimate %d, want <= 25", tsk.TimeEstimate)
 		}
 	}
 }
@@ -51,7 +50,7 @@ func TestFilterTasksByTime(t *testing.T) {
 func TestFilterTasksByTag_NoMatches(t *testing.T) {
 	tasks := []task.Task{testutil.MakeTask("1", priority.Medium, 25, "work")}
 
-	got := filterTasksByTag(tasks, "home")
+	got := task.FilterByTag(tasks, "home")
 
 	if len(got) != 0 {
 		t.Errorf("got %d tasks, want 0", len(got))
@@ -112,11 +111,10 @@ func TestWsmScore_OlderTaskScoresHigher(t *testing.T) {
 }
 
 func TestWsmScore_SingleTimeValueDoesNotDivideByZero(t *testing.T) {
-
 	s := New(testutil.MakeSchedulerConfig())
 
-	task := testutil.MakeTask("1", priority.Medium, 25, "")
-	score := s.wsmScore(task, 25, 25)
+	tsk := testutil.MakeTask("1", priority.Medium, 25, "")
+	score := s.wsmScore(tsk, 25, 25)
 
 	if score <= 0 {
 		t.Errorf("expected a positive score when minTime == maxTime, got %v", score)
@@ -126,9 +124,9 @@ func TestWsmScore_SingleTimeValueDoesNotDivideByZero(t *testing.T) {
 func TestSelectNextTask_EmptyListReturnsError(t *testing.T) {
 	s := New(testutil.MakeSchedulerConfig())
 
-	_, err := s.SelectNextTask(nil)
-	if err != errEmptyTaskList {
-		t.Errorf("got error %v, want %v", err, errEmptyTaskList)
+	_, err := s.SelectNext(nil)
+	if err != ErrEmptyTaskList {
+		t.Errorf("got error %v, want %v", err, ErrEmptyTaskList)
 	}
 }
 
@@ -137,7 +135,7 @@ func TestSelectNextTask_SingleTaskIsAlwaysReturned(t *testing.T) {
 
 	testTask := testutil.MakeTask("only", priority.Medium, 25, "")
 
-	got, err := s.SelectNextTask([]task.Task{testTask})
+	got, err := s.SelectNext([]task.Task{testTask})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -155,19 +153,19 @@ func TestSelectNextTask_AlwaysReturnsATaskFromTheList(t *testing.T) {
 	}
 
 	valid := make(map[string]bool, len(tasks))
-	for _, task := range tasks {
-		valid[task.ID] = true
+	for _, tsk := range tasks {
+		valid[tsk.ID] = true
 	}
 
 	s := New(testutil.MakeSchedulerConfig())
 
 	for range 100 {
-		got, err := s.SelectNextTask(tasks)
+		got, err := s.SelectNext(tasks)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		if !valid[got.ID] {
-			t.Fatalf("selectNextTask returned unknown task ID %q", got.ID)
+			t.Fatalf("SelectNext returned unknown task ID %q", got.ID)
 		}
 	}
 }

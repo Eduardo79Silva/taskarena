@@ -67,58 +67,54 @@ func TestPriorityLevel_Set(t *testing.T) {
 }
 
 func TestCreateTask_EmptyNameReturnsError(t *testing.T) {
-	_, err := createTask("", "desc", 25, priority.Medium, "work")
+	_, err := New("", "desc", 25, priority.Medium, "work")
 	if err == nil {
-		t.Fatal("createTask with empty name: expected an error, got nil")
+		t.Fatal("New with empty name: expected an error, got nil")
 	}
 }
 
 func TestCreateTask_ValidInputPopulatesFields(t *testing.T) {
 	before := time.Now()
-	task, err := createTask("Write tests", "cover the core logic", 30, priority.High, "work")
+	tsk, err := New("Write tests", "cover the core logic", 30, priority.High, "work")
 	after := time.Now()
-
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-
-	if task.ID == "" {
+	if tsk.ID == "" {
 		t.Error("expected a generated ID, got empty string")
 	}
-	if task.Name != "Write tests" {
-		t.Errorf("Name = %q, want %q", task.Name, "Write tests")
+	if tsk.Name != "Write tests" {
+		t.Errorf("Name = %q, want %q", tsk.Name, "Write tests")
 	}
-	if task.Description != "cover the core logic" {
-		t.Errorf("Description = %q, want %q", task.Description, "cover the core logic")
+	if tsk.Description != "cover the core logic" {
+		t.Errorf("Description = %q, want %q", tsk.Description, "cover the core logic")
 	}
-	if task.TimeEstimate != 30 {
-		t.Errorf("TimeEstimate = %d, want 30", task.TimeEstimate)
+	if tsk.TimeEstimate != 30 {
+		t.Errorf("TimeEstimate = %d, want 30", tsk.TimeEstimate)
 	}
-	if task.Priority != priority.High {
-		t.Errorf("Priority = %v, want %v", task.Priority, priority.High)
+	if tsk.Priority != priority.High {
+		t.Errorf("Priority = %v, want %v", tsk.Priority, priority.High)
 	}
-	if task.Tag != "work" {
-		t.Errorf("Tag = %q, want %q", task.Tag, "work")
+	if tsk.Tag != "work" {
+		t.Errorf("Tag = %q, want %q", tsk.Tag, "work")
 	}
-	if task.CompletedAt != nil {
-		t.Errorf("CompletedAt = %v, want nil", task.CompletedAt)
+	if tsk.CompletedAt != nil {
+		t.Errorf("CompletedAt = %v, want nil", tsk.CompletedAt)
 	}
-
-	if task.CreatedAt.Before(before) || task.CreatedAt.After(after) {
-		t.Errorf("CreatedAt = %v, want between %v and %v", task.CreatedAt, before, after)
+	if tsk.CreatedAt.Before(before) || tsk.CreatedAt.After(after) {
+		t.Errorf("CreatedAt = %v, want between %v and %v", tsk.CreatedAt, before, after)
 	}
 }
 
 func TestCreateTask_GeneratesUniqueIDs(t *testing.T) {
-	t1, err := createTask("a", "", 10, priority.Low, "")
+	t1, err := New("a", "", 10, priority.Low, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	t2, err := createTask("b", "", 10, priority.Low, "")
+	t2, err := New("b", "", 10, priority.Low, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-
 	if t1.ID == t2.ID {
 		t.Errorf("expected unique IDs, both were %q", t1.ID)
 	}

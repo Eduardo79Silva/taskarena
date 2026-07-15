@@ -1,8 +1,12 @@
-package main
+package status
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/eduardo79silva/taskarena/internal/priority"
+	"github.com/eduardo79silva/taskarena/internal/task"
+	"github.com/eduardo79silva/taskarena/internal/testutil"
 )
 
 func TestGetCurrentTaskView_NoCurrentTaskReturnsNil(t *testing.T) {
@@ -20,7 +24,7 @@ func TestGetCurrentTaskView_NoCurrentTaskReturnsNil(t *testing.T) {
 func TestGetCurrentTaskView_ReturnsCurrentTaskFields(t *testing.T) {
 	withTempStoragePaths(t)
 
-	task := makeTask("1", HighPriority, 30, "work")
+	task := testutil.MakeTask("1", priority.High, 30, "work")
 	writeCurrentTask(task)
 
 	view, err := getCurrentTaskView()
@@ -54,7 +58,7 @@ func TestFormatWaybar_NilView(t *testing.T) {
 }
 
 func TestFormatWaybar_WithView(t *testing.T) {
-	view := &CurrentTaskView{Name: "Write tests", Description: "cover the core logic"}
+	view := &task.CurrentTaskView{Name: "Write tests", Description: "cover the core logic"}
 
 	out, err := formatWaybar(view)
 	if err != nil {
@@ -79,7 +83,7 @@ func TestFormatWaybar_WithView(t *testing.T) {
 func TestFormatters_NilView(t *testing.T) {
 	tests := []struct {
 		name string
-		fn   func(*CurrentTaskView) string
+		fn   func(*task.CurrentTaskView) string
 	}{
 		{"formatNotification", formatNotification},
 		{"formatPlain", formatPlain},
@@ -97,10 +101,10 @@ func TestFormatters_NilView(t *testing.T) {
 }
 
 func TestFormatNotification_WithView(t *testing.T) {
-	view := &CurrentTaskView{
+	view := &task.CurrentTaskView{
 		Name:         "Write tests",
 		Description:  "cover the core logic",
-		Priority:     HighPriority,
+		Priority:     priority.High,
 		TimeEstimate: 30,
 	}
 
@@ -112,9 +116,9 @@ func TestFormatNotification_WithView(t *testing.T) {
 }
 
 func TestFormatPlain_WithView(t *testing.T) {
-	view := &CurrentTaskView{
+	view := &task.CurrentTaskView{
 		Name:         "Write tests",
-		Priority:     HighPriority,
+		Priority:     priority.High,
 		TimeEstimate: 30,
 	}
 

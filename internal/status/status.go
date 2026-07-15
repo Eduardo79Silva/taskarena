@@ -1,10 +1,13 @@
-package main
+package status
 
 import (
 	"encoding/json"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/eduardo79silva/taskarena/internal/store"
+	"github.com/eduardo79silva/taskarena/internal/task"
 )
 
 type WaybarOutput struct {
@@ -14,8 +17,8 @@ type WaybarOutput struct {
 	Percentage int    `json:"percentage,omitempty"`
 }
 
-func getCurrentTaskView() (*CurrentTaskView, error) {
-	task, err := readTaskFile(CurrentTaskFilePath)
+func getCurrentTaskView() (*task.CurrentTaskView, error) {
+	currentTask, err := store.ReadTaskFile(store.CurrentTaskFilePath)
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
@@ -23,17 +26,17 @@ func getCurrentTaskView() (*CurrentTaskView, error) {
 		return nil, err
 	}
 
-	view := CurrentTaskView{}
+	view := task.CurrentTaskView{}
 
-	view.Name = task.Name
-	view.Description = task.Description
-	view.Priority = task.Priority
-	view.TimeEstimate = task.TimeEstimate
+	view.Name = currentTask.Name
+	view.Description = currentTask.Description
+	view.Priority = currentTask.Priority
+	view.TimeEstimate = currentTask.TimeEstimate
 
 	return &view, nil
 }
 
-func formatWaybar(view *CurrentTaskView) (string, error) {
+func formatWaybar(view *task.CurrentTaskView) (string, error) {
 	out := WaybarOutput{}
 
 	if view == nil {
@@ -53,7 +56,7 @@ func formatWaybar(view *CurrentTaskView) (string, error) {
 	return string(data), nil
 }
 
-func formatNotification(view *CurrentTaskView) string {
+func formatNotification(view *task.CurrentTaskView) string {
 	if view == nil {
 		return "There isn't any active task currently"
 	}
@@ -71,7 +74,7 @@ func formatNotification(view *CurrentTaskView) string {
 	return builder.String()
 }
 
-func formatPlain(view *CurrentTaskView) string {
+func formatPlain(view *task.CurrentTaskView) string {
 	if view == nil {
 		return "There isn't any active task currently"
 	}

@@ -1,12 +1,15 @@
-package main
+package tasktime
 
-import "time"
+import (
+	"github.com/eduardo79silva/taskarena/internal/task"
+	"time"
+)
 
-func updateTaskTime(task *Task) {
+func UpdateTaskTime(task *task.Task) {
 	task.UpdatedAt = time.Now()
 }
 
-func calculateTimeSpent(task *Task) {
+func CalculateTimeSpent(task *task.Task) {
 	lastUpdate := task.UpdatedAt
 	timeSpent := time.Since(lastUpdate)
 

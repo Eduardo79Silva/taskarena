@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/eduardo79silva/taskarena/internal/task"
 )
@@ -75,10 +76,14 @@ func (s *Store) CompleteCurrentTask() error {
 	current.UpdateTime()
 	current.CalculateTimeSpent()
 
+	now := time.Now()
+	current.CompletedAt = &now
+
 	tasks, err := readTasksFile(s.CompletedTasksFilePath)
 	if err != nil {
 		return err
 	}
+
 	tasks = append(tasks, current)
 	if err := writeTasksFile(s.CompletedTasksFilePath, tasks); err != nil {
 		return err

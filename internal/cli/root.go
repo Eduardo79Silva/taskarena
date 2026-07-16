@@ -5,12 +5,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewRootCmd(a *app.App) *cobra.Command {
+func NewRootCmd(a *app.App, version string) *cobra.Command {
 	root := &cobra.Command{
-		Use:   "taskarena",
-		Short: "A weighted-scheduling task manager",
+		Use:     "taskarena",
+		Short:   "A weighted-scheduling task manager",
+		Version: version,
 	}
-
 	root.AddCommand(
 		newPushCmd(a),
 		newPullCmd(a),
@@ -19,6 +19,5 @@ func NewRootCmd(a *app.App) *cobra.Command {
 		newListCmd(a),
 		newEditCmd(a),
 	)
-
 	return root
 }

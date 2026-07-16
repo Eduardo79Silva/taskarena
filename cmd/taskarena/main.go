@@ -20,7 +20,7 @@ func main() {
 	}
 
 	a := app.New(cfg, s)
-	root := cli.NewRootCmd(a)
+	root := cli.NewRootCmd(a, version)
 
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

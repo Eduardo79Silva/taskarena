@@ -18,6 +18,7 @@ func NewRootCmd(a *app.App, version string) *cobra.Command {
 		newStatusCmd(a),
 		newListCmd(a),
 		newEditCmd(a),
+		newTUICommand(a),
 	)
 	return root
 }

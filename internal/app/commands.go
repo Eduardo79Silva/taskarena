@@ -34,13 +34,13 @@ func (a *App) Pull(tagFilter string, timeFilter int) (task.Task, error) {
 	}
 	newTask.UpdateTime()
 
-	currentTask, err := a.store.ReadCurrentTask()
-	hadCurrent := err == nil && (currentTask != task.Task{})
+	var currentTask *task.Task
+	currentTask, err = a.store.ReadCurrentTask()
 
-	if hadCurrent {
+	if currentTask != nil {
 		currentTask.UpdateTime()
 		currentTask.CalculateTimeSpent()
-		if err := a.store.PushTask(currentTask); err != nil {
+		if err := a.store.PushTask(*currentTask); err != nil {
 			return task.Task{}, err
 		}
 		tasks, err = a.store.LoadTasks()
@@ -62,16 +62,4 @@ func (a *App) Pull(tagFilter string, timeFilter int) (task.Task, error) {
 
 func (a *App) Done() error {
 	return a.store.CompleteCurrentTask()
-}
-
-func (a *App) CurrentTaskView() (*task.CurrentTaskView, error) {
-	return a.store.GetCurrentTaskView()
-}
-
-func (a *App) ListTasks() ([]task.Task, error) {
-	return a.store.LoadTasks()
-}
-
-func (a *App) TasksFilePath() string {
-	return a.store.TasksFilePath
 }

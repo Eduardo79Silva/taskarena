@@ -38,7 +38,7 @@ func (s *Store) LoadTasks() ([]task.Task, error) {
 	return readTasksFile(s.TasksFilePath)
 }
 
-func (s *Store) ReadCurrentTask() (task.Task, error) {
+func (s *Store) ReadCurrentTask() (*task.Task, error) {
 	return readTaskFile(s.CurrentTaskFilePath)
 }
 
@@ -84,7 +84,7 @@ func (s *Store) CompleteCurrentTask() error {
 		return err
 	}
 
-	tasks = append(tasks, current)
+	tasks = append(tasks, *current)
 	if err := writeTasksFile(s.CompletedTasksFilePath, tasks); err != nil {
 		return err
 	}
@@ -124,12 +124,12 @@ func readTasksFile(path string) ([]task.Task, error) {
 	return tasks, err
 }
 
-func readTaskFile(path string) (task.Task, error) {
+func readTaskFile(path string) (*task.Task, error) {
 	dat, err := os.ReadFile(path)
 	if err != nil {
-		return task.Task{}, err
+		return &task.Task{}, err
 	}
-	var t task.Task
+	var t *task.Task
 	err = json.Unmarshal(dat, &t)
 	return t, err
 }

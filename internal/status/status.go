@@ -1,10 +1,11 @@
-package main
+package status
 
 import (
 	"encoding/json"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/eduardo79silva/taskarena/internal/task"
 )
 
 type WaybarOutput struct {
@@ -14,28 +15,8 @@ type WaybarOutput struct {
 	Percentage int    `json:"percentage,omitempty"`
 }
 
-func getCurrentTaskView() (*CurrentTaskView, error) {
-	task, err := readTaskFile(CurrentTaskFilePath)
-	if os.IsNotExist(err) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	view := CurrentTaskView{}
-
-	view.Name = task.Name
-	view.Description = task.Description
-	view.Priority = task.Priority
-	view.TimeEstimate = task.TimeEstimate
-
-	return &view, nil
-}
-
-func formatWaybar(view *CurrentTaskView) (string, error) {
+func FormatWaybar(view *task.CurrentTaskView) (string, error) {
 	out := WaybarOutput{}
-
 	if view == nil {
 		out.Text = "No Task"
 		out.Tooltip = "There isn't any active task currently"
@@ -53,13 +34,11 @@ func formatWaybar(view *CurrentTaskView) (string, error) {
 	return string(data), nil
 }
 
-func formatNotification(view *CurrentTaskView) string {
+func FormatNotification(view *task.CurrentTaskView) string {
 	if view == nil {
 		return "There isn't any active task currently"
 	}
-
 	builder := strings.Builder{}
-
 	builder.WriteString(view.Name)
 	builder.WriteString(" (")
 	builder.WriteString(view.Priority.String())
@@ -67,23 +46,19 @@ func formatNotification(view *CurrentTaskView) string {
 	builder.WriteString(strconv.Itoa(view.TimeEstimate))
 	builder.WriteString("m)\n")
 	builder.WriteString(view.Description)
-
 	return builder.String()
 }
 
-func formatPlain(view *CurrentTaskView) string {
+func FormatPlain(view *task.CurrentTaskView) string {
 	if view == nil {
 		return "There isn't any active task currently"
 	}
-
 	builder := strings.Builder{}
-
 	builder.WriteString(view.Name)
 	builder.WriteString(" (")
 	builder.WriteString(view.Priority.String())
 	builder.WriteString(", ")
 	builder.WriteString(strconv.Itoa(view.TimeEstimate))
 	builder.WriteString("m)")
-
 	return builder.String()
 }

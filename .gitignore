@@ -34,3 +34,5 @@ go.work.sum
 
 # Data files
 tasks.json
+# Added by goreleaser init:
+dist/

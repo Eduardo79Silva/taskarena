@@ -1,46 +1,18 @@
-package main
+package status
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/eduardo79silva/taskarena/internal/priority"
+	"github.com/eduardo79silva/taskarena/internal/task"
 )
 
-func TestGetCurrentTaskView_NoCurrentTaskReturnsNil(t *testing.T) {
-	withTempStoragePaths(t)
-
-	view, err := getCurrentTaskView()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if view != nil {
-		t.Errorf("got %+v, want nil", view)
-	}
-}
-
-func TestGetCurrentTaskView_ReturnsCurrentTaskFields(t *testing.T) {
-	withTempStoragePaths(t)
-
-	task := makeTask("1", HighPriority, 30, "work")
-	writeCurrentTask(task)
-
-	view, err := getCurrentTaskView()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if view == nil {
-		t.Fatal("got nil view, want a populated one")
-	}
-	if view.Name != task.Name || view.Priority != task.Priority || view.TimeEstimate != task.TimeEstimate {
-		t.Errorf("view = %+v, want fields matching task %+v", view, task)
-	}
-}
-
 func TestFormatWaybar_NilView(t *testing.T) {
-	out, err := formatWaybar(nil)
+	out, err := FormatWaybar(nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-
 	var parsed WaybarOutput
 	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
 		t.Fatalf("output is not valid JSON: %v", err)
@@ -54,13 +26,11 @@ func TestFormatWaybar_NilView(t *testing.T) {
 }
 
 func TestFormatWaybar_WithView(t *testing.T) {
-	view := &CurrentTaskView{Name: "Write tests", Description: "cover the core logic"}
-
-	out, err := formatWaybar(view)
+	view := &task.CurrentTaskView{Name: "Write tests", Description: "cover the core logic"}
+	out, err := FormatWaybar(view)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-
 	var parsed WaybarOutput
 	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
 		t.Fatalf("output is not valid JSON: %v", err)
@@ -79,12 +49,11 @@ func TestFormatWaybar_WithView(t *testing.T) {
 func TestFormatters_NilView(t *testing.T) {
 	tests := []struct {
 		name string
-		fn   func(*CurrentTaskView) string
+		fn   func(*task.CurrentTaskView) string
 	}{
-		{"formatNotification", formatNotification},
-		{"formatPlain", formatPlain},
+		{"FormatNotification", FormatNotification},
+		{"FormatPlain", FormatPlain},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.fn(nil)
@@ -97,14 +66,13 @@ func TestFormatters_NilView(t *testing.T) {
 }
 
 func TestFormatNotification_WithView(t *testing.T) {
-	view := &CurrentTaskView{
+	view := &task.CurrentTaskView{
 		Name:         "Write tests",
 		Description:  "cover the core logic",
-		Priority:     HighPriority,
+		Priority:     priority.High,
 		TimeEstimate: 30,
 	}
-
-	got := formatNotification(view)
+	got := FormatNotification(view)
 	want := "Write tests (high, 30m)\ncover the core logic"
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
@@ -112,13 +80,12 @@ func TestFormatNotification_WithView(t *testing.T) {
 }
 
 func TestFormatPlain_WithView(t *testing.T) {
-	view := &CurrentTaskView{
+	view := &task.CurrentTaskView{
 		Name:         "Write tests",
-		Priority:     HighPriority,
+		Priority:     priority.High,
 		TimeEstimate: 30,
 	}
-
-	got := formatPlain(view)
+	got := FormatPlain(view)
 	want := "Write tests (high, 30m)"
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)

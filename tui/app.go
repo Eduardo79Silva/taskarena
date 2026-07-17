@@ -4,7 +4,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/eduardo79silva/taskarena/internal/app"
-	"github.com/eduardo79silva/taskarena/tui/screens/tasks"
+	"github.com/eduardo79silva/taskarena/tui/pages/tasks"
 )
 
 type Model struct {

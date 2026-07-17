@@ -13,7 +13,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		m.tasks = msg.Tasks
+		m.taskList.SetTasks(msg.Tasks)
 
 	case TaskCompletedMsg:
 		if msg.Err != nil {
@@ -27,13 +27,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 
 		case "down", "j":
-			m.moveDown()
+			m.taskList.MoveDown()
 
 		case "up", "k":
-			m.moveUp()
+			m.taskList.MoveUp()
 
 		case "d":
-			if _, ok := m.SelectedTask(); ok {
+			if _, ok := m.taskList.SelectedTask(); ok {
 				return m, completeTaskCmd(m.app)
 			}
 

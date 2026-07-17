@@ -8,6 +8,7 @@ import (
 type Model struct {
 	tasks    []task.Task
 	selected int
+	width    int
 
 	styles styles.Styles
 }
@@ -45,4 +46,8 @@ func (m Model) SelectedTask() (task.Task, bool) {
 	}
 
 	return m.tasks[m.selected], true
+}
+
+func (m *Model) SetWidth(width int) {
+	m.width = width
 }

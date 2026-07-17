@@ -23,6 +23,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, loadTasksCmd(m.app)
 
+	case tea.WindowSizeMsg:
+		m.taskList.SetWidth(msg.Width)
+
 	case tea.KeyMsg:
 		switch msg.String() {
 

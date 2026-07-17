@@ -18,7 +18,9 @@ func DefaultStyles() Styles {
 
 		Selected: lipgloss.NewStyle().
 			Background(lipgloss.Color("62")).
-			Foreground(lipgloss.Color("230")),
+			Foreground(lipgloss.Color("230")).
+			PaddingLeft(1).
+			PaddingRight(1),
 
 		Normal: lipgloss.NewStyle(),
 		Empty: lipgloss.NewStyle().

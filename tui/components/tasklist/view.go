@@ -15,6 +15,7 @@ func (m Model) View() string {
 		row := NewRow(
 			task,
 			i == m.selected,
+			m.width,
 			m.styles,
 		)
 

@@ -8,27 +8,35 @@ import (
 type Row struct {
 	task     task.Task
 	selected bool
+	width    int
 	styles   styles.Styles
 }
 
 func NewRow(
 	task task.Task,
 	selected bool,
+	width int,
 	styles styles.Styles,
 ) Row {
 	return Row{
 		task:     task,
 		selected: selected,
+		width:    width,
 		styles:   styles,
 	}
 }
 
 func (r Row) View() string {
-	title := r.task.Name
+	content := "  " + r.task.Name
+
+	style := r.styles.Normal
 
 	if r.selected {
-		return r.styles.Selected.Render("> " + title)
+		style = r.styles.Selected
+		content = "> " + r.task.Name
 	}
 
-	return r.styles.Normal.Render("  " + title)
+	return style.
+		Width(r.width).
+		Render(content)
 }

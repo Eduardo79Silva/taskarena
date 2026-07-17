@@ -31,9 +31,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "down", "j":
 			m.taskList.MoveDown()
+			if task, ok := m.taskList.SelectedTask(); ok {
+				m.details.SetTask(task)
+			}
 
 		case "up", "k":
 			m.taskList.MoveUp()
+			if task, ok := m.taskList.SelectedTask(); ok {
+				m.details.SetTask(task)
+			}
 
 		case "d":
 			if _, ok := m.taskList.SelectedTask(); ok {

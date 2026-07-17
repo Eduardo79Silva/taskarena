@@ -49,5 +49,5 @@ func (m Model) SelectedTask() (task.Task, bool) {
 }
 
 func (m *Model) SetWidth(width int) {
-	m.width = width
+	m.width = width / 2
 }

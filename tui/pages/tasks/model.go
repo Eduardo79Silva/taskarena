@@ -4,6 +4,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/eduardo79silva/taskarena/internal/app"
+	"github.com/eduardo79silva/taskarena/tui/components/details"
 	"github.com/eduardo79silva/taskarena/tui/components/tasklist"
 	"github.com/eduardo79silva/taskarena/tui/styles"
 )
@@ -12,6 +13,7 @@ type Model struct {
 	app *app.App
 
 	taskList tasklist.Model
+	details  details.Model
 
 	err error
 }

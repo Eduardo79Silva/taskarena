@@ -4,6 +4,8 @@ import "charm.land/lipgloss/v2"
 
 type Styles struct {
 	Title    lipgloss.Style
+	Label    lipgloss.Style
+	Value    lipgloss.Style
 	Selected lipgloss.Style
 	Normal   lipgloss.Style
 	Empty    lipgloss.Style
@@ -15,6 +17,9 @@ func DefaultStyles() Styles {
 		Title: lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("86")),
+		Label: lipgloss.NewStyle().
+			Bold(true),
+		Value: lipgloss.NewStyle(),
 
 		Selected: lipgloss.NewStyle().
 			Background(lipgloss.Color("62")).

@@ -9,12 +9,18 @@ import (
 func (m Model) View() tea.View {
 	title := styles.DefaultStyles().Title.Render("Which task should we pick?\n\n")
 
+	body := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		m.taskList.View(),
+		m.details.View(),
+	)
+
 	footer := styles.DefaultStyles().Title.Render("q quit • ? help")
 
 	return tea.NewView(lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
-		m.taskList.View(),
+		body,
 		footer,
 	))
 }

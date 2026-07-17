@@ -1,36 +1,41 @@
 package tasks
 
 import (
-	"fmt"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/eduardo79silva/taskarena/tui/styles"
 )
 
 func (m Model) View() tea.View {
-	// The header
-	var s strings.Builder
-	s.WriteString("Which task should we pick?\n\n")
+	title := styles.Title.Render("Which task should we pick?\n\n")
 
 	if len(m.tasks) == 0 {
-		s.WriteString("No tasks found.\n")
-		return tea.NewView(s.String())
+		empty := styles.Normal.Render("No tasks found.\n")
+		return tea.NewView(empty)
 	}
 
-	// Iterate over our choices
+	var rows []string
+
 	for i, t := range m.tasks {
-
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
-		if m.selected == i {
-			cursor = ">" // cursor!
+		if i == m.selected {
+			rows = append(rows,
+				styles.Selected.Render(t.Name),
+			)
+		} else {
+			rows = append(rows,
+				styles.Normal.Render(t.Name),
+			)
 		}
-
-		// Render the row
-		fmt.Fprintf(&s, "%s [%s] %s\n", cursor, t.Tag, t.Name)
 	}
 
-	s.WriteString("\nPress q to quit.\n")
+	footer := styles.Title.Render("q quit • ? help")
 
-	return tea.NewView(s.String())
+	return tea.NewView(lipgloss.JoinVertical(
+		lipgloss.Left,
+		title,
+		strings.Join(rows, "\n"),
+		footer,
+	))
 }

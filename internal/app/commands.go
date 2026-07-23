@@ -60,6 +60,10 @@ func (a *App) Pull(tagFilter string, timeFilter int) (task.Task, error) {
 	return newTask, nil
 }
 
-func (a *App) Done() error {
+func (a *App) FinishCurrentTask() error {
+	return a.store.CompleteCurrentTask()
+}
+
+func (a *App) FinishTask(task task.Task) error {
 	return a.store.CompleteCurrentTask()
 }

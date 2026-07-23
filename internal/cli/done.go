@@ -10,7 +10,7 @@ func newDoneCmd(a *app.App) *cobra.Command {
 		Use:   "done",
 		Short: "Complete the current task",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return a.Done()
+			return a.FinishCurrentTask()
 		},
 	}
 }

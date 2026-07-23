@@ -19,7 +19,7 @@ func loadTasksCmd(a *app.App) tea.Cmd {
 
 func completeTaskCmd(a *app.App) tea.Cmd {
 	return func() tea.Msg {
-		err := a.Done()
+		err := a.FinishCurrentTask()
 
 		return TaskCompletedMsg{
 			Err: err,

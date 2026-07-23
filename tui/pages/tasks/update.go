@@ -14,6 +14,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.taskList.SetTasks(msg.Tasks)
+		m.details.SetTask(msg.Tasks[m.taskList.SelectedTaskIndex()])
 
 	case TaskCompletedMsg:
 		if msg.Err != nil {
